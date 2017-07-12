@@ -18,25 +18,27 @@ public class ByteBufferAddressSpace implements AddressSpace {
 
 	public int getEndAddress()
 	{
-		return startAddr + size;
+		return startAddr + (size - 1);
 	}
 
 	public int readByte(int addr)
 	{
-                System.out.println("[PMR 1614] Addr: " + addr);
-		int v = buffer.get(addr - startAddr);
+                int addrToGet = addr - startAddr;
+		int v = buffer.get(addrToGet);
 		return v & 0x00ff;
 	}
 
 	public int readWord(int addr)
 	{
-		int v =  buffer.getShort(addr - startAddr);
+                int addrToGet = addr - startAddr;
+		int v =  buffer.getShort(addrToGet);
 		return v & 0x0000ffff;
 	}
 
 	public int readLong(int addr)
 	{
-		return buffer.getInt(addr);
+                int addrToGet = addr - startAddr;
+		return buffer.getInt(addrToGet);
 	}
 
 	public void writeByte(int addr, int value)
