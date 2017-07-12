@@ -1,13 +1,20 @@
 package m68k.memory
 
 class LinkedAddressSpace(low: AddressSpace, high: AddressSpace) extends AddressSpace {
+
+  require(low.getEndAddress < high.getStartAddress)
+
   def getEndAddress = high.getEndAddress
   def getStartAddress = low.getStartAddress
 
   def size = low.size + high.size
 
-  protected def forAddr(addr: Int): AddressSpace =
+  protected def forAddr(addr: Int): AddressSpace = {
+    if(addr < low.getStartAddress || (addr > low.getEndAddress && addr < high.getStartAddress))
+      throw new Exception(f"Unmapped memory address 0x$addr%04X")
+
     if(addr < (low.getEndAddress)) low else high
+  }
 
   def internalReadByte(addr: Int) = forAddr(addr).readByte(addr)
   def internalReadLong(addr: Int) = forAddr(addr).readLong(addr)

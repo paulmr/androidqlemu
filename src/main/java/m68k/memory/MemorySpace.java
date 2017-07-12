@@ -28,9 +28,15 @@ import java.nio.ByteBuffer;
 */
 public class MemorySpace extends ByteBufferAddressSpace
 {
-	public MemorySpace(int sizeKb)
+        public MemorySpace(int sizeKb, int startAddr)
 	{
 		size = sizeKb * 1024;
 		buffer = ByteBuffer.allocateDirect(size);
+                this.startAddr = startAddr;
 	}
+
+        public MemorySpace(int sizeKb)
+        {
+                this(sizeKb, 0);
+        }
 }
