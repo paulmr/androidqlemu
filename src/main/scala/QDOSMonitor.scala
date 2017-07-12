@@ -16,7 +16,9 @@ object QDOSMonitor extends App {
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val ram = new MemorySpace(ramSize, 0x20000)
 
-  val addrSpace = new LinkedAddressSpace(rom, ram)
+  val addrSpace = new LinkedAddressSpace(rom,
+    new LinkedAddressSpace(ram,
+      new NullAddressSpace(ram.getEndAddress + 1)))
 
   println(f"ROM: ${rom.getStartAddress}%08x => ${rom.getEndAddress}%08x")
   println(f"RAM: ${ram.getStartAddress}%08x => ${ram.getEndAddress}%08x")
