@@ -52,7 +52,7 @@ public class Monitor implements Runnable
 		this.memory = memory;
 		buffer = new StringBuilder(128);
 		showBytes = false;
-		autoRegs = false;
+		autoRegs = true;
 		breakpoints = new ArrayList<Integer>();
 	}
 
@@ -102,6 +102,7 @@ public class Monitor implements Runnable
 		}
 
 		running = true;
+                if(autoRegs) dumpInfo();
 		while(running)
 		{
 			try
@@ -398,10 +399,12 @@ public class Monitor implements Runnable
 		}
 		String address = tokens[1];
 		int size = memory.size();
+                int endAddr = memory.getEndAddress();
 		try
 		{
 			int addr = parseInt(address);
-			if(addr < 0 || addr >= size)
+			if(addr < memory.getStartAddress() ||
+                           addr > memory.getEndAddress())
 			{
 				writer.println("Address out of range");
 				return;
@@ -409,10 +412,10 @@ public class Monitor implements Runnable
 			StringBuilder sb = new StringBuilder(80);
 			StringBuilder asc = new StringBuilder(16);
 
-			for(int y = 0; y < 8 && addr < size; y++)
+			for(int y = 0; y < 8 && addr <= endAddr; y++)
 			{
 				sb.append(String.format("%08x", addr)).append("  ");
-				for(int x = 0; x < 16 && addr < size; x++)
+				for(int x = 0; x < 16 && addr < endAddr; x++)
 				{
 					int b = cpu.readMemoryByte(addr);
 					sb.append(String.format("%02x ", b));

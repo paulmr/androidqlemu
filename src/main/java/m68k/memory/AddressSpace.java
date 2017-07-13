@@ -30,7 +30,7 @@ public interface AddressSpace
 	public int getStartAddress();
 	public int getEndAddress();
 
-       public boolean isValid(int addr);
+        public boolean isValid(int addr);
 
 	public int readByte(int addr);
 	public int readWord(int addr);
