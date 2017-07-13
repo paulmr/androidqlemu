@@ -253,7 +253,7 @@ public abstract class CpuCore implements Cpu
          * Set the SR when coming from an RTE.
          * We might already have been IN supervisor mode when the exception was caused (eg a Trap called in supervisor mode),
          * so we must check the S bit we get back from the stack and possibly STAY in supervisor mode even after the RTE.
-         * @param value 
+         * @param value
          */
         public void setSR2(int value)
 	{
@@ -740,7 +740,7 @@ public abstract class CpuCore implements Cpu
 				}
 				break;
                         }
-                            
+
                         // WL added swap also affects the SR
                         case SWAP:
                         {
@@ -929,13 +929,13 @@ public abstract class CpuCore implements Cpu
 				pushLong(reg_pc);
 				pushWord(old_sr);
 			}
-                        * 
+                        *
                         * This is wrong. An exception will push words onto the stack even when we're already in Supervisor mode
-                        * 
+                        *
                         */
                         int old_sr = reg_sr;
                         if ((reg_sr & SUPERVISOR_FLAG) == 0)// were we in supervisor mode already?....
-                        {                           
+                        {
                             reg_sr |= SUPERVISOR_FLAG;      // ...no, so set supervisor bit
                             reg_usp = addr_regs[7];         // and change stack pointers
                             addr_regs[7] = reg_ssp;
@@ -944,8 +944,8 @@ public abstract class CpuCore implements Cpu
                         //save pc and status regs
                         pushLong(reg_pc);
                         pushWord(old_sr);
-                    
-                    
+
+
 		}
 		else
 		{
@@ -968,7 +968,7 @@ public abstract class CpuCore implements Cpu
                 // wl don't call setSupervisorMode, do it direcctly
 		int old_sr = reg_sr;                // SR BEFORE the exception
                 if ((reg_sr & SUPERVISOR_FLAG) == 0)// were we in supervisor mode already?....
-                {                           
+                {
                     reg_sr |= SUPERVISOR_FLAG;      // ...no, so set supervisor bit
                     reg_usp = addr_regs[7];         // and change stack pointers
                     addr_regs[7] = reg_ssp;
@@ -994,6 +994,15 @@ public abstract class CpuCore implements Cpu
 
 		reg_pc = xaddress;
 	}
+
+        public void raiseBusError(int addr) {
+                /* the m68k writes some extra data when a bus error
+                 * occurs. QDOS ignores it - but it does compensate
+                 * for it. */
+                raiseException(3);
+                pushLong(addr); /* the address that caused the error */
+                pushLong(0);    /* not sure what this one should be */
+        }
 
 	public void raiseSRException()
 	{
@@ -1055,7 +1064,7 @@ public abstract class CpuCore implements Cpu
 		priority &= 0x07;
 
 		//is it higher than the current interrupt mask ?
-                
+
                 //wl ensure new interrupt is > than current one (not >=)
 		if(priority >  getInterruptLevel())
 		{
@@ -1074,40 +1083,68 @@ public abstract class CpuCore implements Cpu
                 if(memory.isValid(addr)) {
                         return memory.readByte(addr);
                 } else {
-                        raiseException(3);
+                        raiseBusError(addr);
                         return 0;
                 }
 	}
 	public int readMemoryByteSigned(int addr)
 	{
-		return signExtendByte(memory.readByte(addr));
+                if(memory.isValid(addr)) {
+                        return signExtendByte(memory.readByte(addr));
+                } else {
+                        raiseBusError(addr);
+                        return 0;
+                }
 	}
 	public int readMemoryWord(int addr)
 	{
-		return memory.readWord(addr);
+                if(memory.isValid(addr)) {
+                        return memory.readWord(addr);
+                } else {
+                        raiseBusError(addr);
+                        return 0;
+                }
 	}
 	public int readMemoryWordSigned(int addr)
 	{
-		return signExtendWord(memory.readWord(addr));
+                if(memory.isValid(addr)) {
+                        return signExtendWord(memory.readWord(addr));
+                } else {
+                        raiseBusError(addr);
+                        return 0;
+                }
 	}
 	public int readMemoryLong(int addr)
 	{
-		return memory.readLong(addr);
+                if(memory.isValid(addr)) {
+                        return memory.readLong(addr);
+                } else {
+                        raiseBusError(addr);
+                        return 0;
+                }
 	}
 	public void writeMemoryByte(int addr, int value)
 	{
-		memory.writeByte(addr, value);
+                if(memory.isValid(addr)) {
+                        memory.writeByte(addr, value);
+                } else {
+                        raiseBusError(addr);
+                }
 	}
 	public void writeMemoryWord(int addr, int value)
 	{
-		memory.writeWord(addr, value);
+                if(memory.isValid(addr)) {
+                        memory.writeWord(addr, value);
+                } else {
+                        raiseBusError(addr);
+                }
 	}
 	public void writeMemoryLong(int addr, int value)
 	{
                 if(memory.isValid(addr)) {
                         memory.writeLong(addr, value);
                 } else {
-                        raiseException(3);
+                        raiseBusError(addr);
                 }
 	}
 
@@ -1615,7 +1652,7 @@ public abstract class CpuCore implements Cpu
 			regNumber = param;
 			size = sz;
 			address = getAddrRegisterLong(regNumber);
-                        
+
                         //WL  in the 68008 At LEAST, moving bytes to the stack will change the stack pointer by 2, not 1
                         if (param==7 && size.byteCount()==1)
                             incrementAddrRegister(regNumber, 2);
