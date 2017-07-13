@@ -1071,7 +1071,12 @@ public abstract class CpuCore implements Cpu
 	//memory interface
 	public int readMemoryByte(int addr)
 	{
-		return memory.readByte(addr);
+                if(memory.isValid(addr)) {
+                        return memory.readByte(addr);
+                } else {
+                        raiseException(3);
+                        return 0;
+                }
 	}
 	public int readMemoryByteSigned(int addr)
 	{
@@ -1099,7 +1104,11 @@ public abstract class CpuCore implements Cpu
 	}
 	public void writeMemoryLong(int addr, int value)
 	{
-		memory.writeLong(addr, value);
+                if(memory.isValid(addr)) {
+                        memory.writeLong(addr, value);
+                } else {
+                        raiseException(3);
+                }
 	}
 
 	public Operand resolveSrcEA(int mode, int reg, Size size)

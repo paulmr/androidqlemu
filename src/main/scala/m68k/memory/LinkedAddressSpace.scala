@@ -11,10 +11,13 @@ class LinkedAddressSpace(low: AddressSpace, high: AddressSpace) extends AddressS
 
   protected def forAddr(addr: Int): AddressSpace = {
     if(addr < low.getStartAddress || (addr > low.getEndAddress && addr < high.getStartAddress))
-      throw new Exception(f"Unmapped memory address 0x$addr%04X")
+      throw new MemoryException(f"Unmapped memory address 0x$addr%04X")
 
     if(addr < (low.getEndAddress)) low else high
   }
+
+  def isValid(addr: Int) = low.isValid(addr) || high.isValid(addr)
+
 
   def internalReadByte(addr: Int) = forAddr(addr).readByte(addr)
   def internalReadLong(addr: Int) = forAddr(addr).readLong(addr)

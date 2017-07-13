@@ -7,6 +7,10 @@ public class ByteBufferAddressSpace implements AddressSpace {
 	protected int size;
         protected int startAddr = 0;
 
+        public boolean isValid(int addr) {
+                return addr >= getStartAddress() && addr <= getEndAddress();
+        }
+
 	public void reset()
 	{
 	}

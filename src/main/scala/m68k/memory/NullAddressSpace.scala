@@ -7,12 +7,17 @@ class NullAddressSpace(startAddress: Int) extends AddressSpace {
 
   def size = 0
 
-  def internalReadByte(addr: Int) = 0
-  def internalReadLong(addr: Int) = 0
-  def internalReadWord(addr: Int) = 0
-  def internalWriteByte(addr: Int, value: Int) = ()
-  def internalWriteWord(addr: Int, value: Int) = ()
-  def internalWriteLong(addr: Int, value: Int) = ()
+  def isValid(addr: Int) = false
+
+  def internalReadByte(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
+  def internalReadLong(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
+  def internalReadWord(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
+  def internalWriteByte(addr: Int, value: Int) =
+    throw new MemoryException(s"Invalid addr $addr")
+  def internalWriteWord(addr: Int, value: Int) =
+    throw new MemoryException(s"Invalid addr $addr")
+  def internalWriteLong(addr: Int, value: Int) =
+    throw new MemoryException(s"Invalid addr $addr")
 
   def readByte(addr: Int) = internalReadByte(addr)
   def readLong(addr: Int) = internalReadLong(addr)
