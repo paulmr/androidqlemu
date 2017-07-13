@@ -6,10 +6,8 @@ import m68k.Monitor;
 
 import java.io.{ IOException, FileInputStream }
 
-object QDOSMonitor extends App {
-  val ramSize = 128 // kilobytes => unexpanded QL
-  
-  val fin = new FileInputStream(args.headOption.getOrElse("js.rom"))
+class QDOSMonitor(ramSize: Int = 128, fileName: String) {
+  val fin = new FileInputStream(fileName)
   
   val rom = new ROMAddressSpace(fin.getChannel(), 0)
 
@@ -20,12 +18,18 @@ object QDOSMonitor extends App {
     new LinkedAddressSpace(ram,
       new NullAddressSpace(ram.getEndAddress + 1)))
 
-  println(f"ROM: ${rom.getStartAddress}%08x => ${rom.getEndAddress}%08x")
-  println(f"RAM: ${ram.getStartAddress}%08x => ${ram.getEndAddress}%08x")
-  println(f"ALL: ${addrSpace.getStartAddress}%08x => ${addrSpace.getEndAddress}%08x")
+  val cpu = new MC68000()
+  cpu.setAddressSpace(addrSpace)
+  cpu.reset()
 
-  val cpu = new MC68000();
-  cpu.setAddressSpace(addrSpace);
-  cpu.reset();
-  new Monitor(cpu, addrSpace).run();
+  def doMonitor = {
+    new Monitor(cpu, addrSpace).run()
+  }
+}
+
+object QDOSMonitor {
+  def main(args: Array[String]) = {
+    val q = new QDOSMonitor(fileName = args.headOption.getOrElse("rom/js.rom"))
+    q.doMonitor
+  }
 }
