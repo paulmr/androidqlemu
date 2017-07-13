@@ -6,7 +6,7 @@ public class ByteBufferAddressSpace implements AddressSpace {
 	protected ByteBuffer buffer;
 	protected int size;
         protected int startAddr = 0;
-    
+
 	public void reset()
 	{
 	}
