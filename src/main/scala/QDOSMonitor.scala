@@ -1,4 +1,4 @@
-package qdos;
+package qdos
 
 import m68k.memory._
 import m68k.cpu.{ Cpu, MC68000 }

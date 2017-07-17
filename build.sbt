@@ -2,13 +2,7 @@ scalaVersion := "2.11.8"
 
 enablePlugins(AndroidApp)
 
-//android.useSupportVectors
-
-//versionCode := Some(1)
-//version := "0.1-SNAPSHOT"
-
-//instrumentTestRunner :=
-//  "android.support.test.runner.AndroidJUnitRunner"
+minSdkVersion := "19"
 
 platformTarget := "android-23"
 

@@ -3,7 +3,7 @@ package smsqmulator.android
 import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
-import android.view.View
+import android.view.{ View, Menu, MenuItem }
 import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -21,13 +21,38 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   lazy val memText = findView(TR.memText)
   lazy val cmdInput = findView(TR.commandInput)
 
+  lazy val screen = findView(TR.qlScreenView)
+
   lazy val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
+
+  var isMonitor = true
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     // type ascription is required due to SCL-10491
     val monitorView = TypedViewHolder.setContentView(this, TR.layout.monitor)
     update
+  }
+
+  override def onCreateOptionsMenu(menu: Menu) = {
+    getMenuInflater.inflate(TR.menu.action.resid, menu)
+    true
+  }
+
+  override def onOptionsItemSelected(item: MenuItem) = {
+    item.getItemId match {
+      case R.id.showScreen =>
+        if(isMonitor) {
+          isMonitor = false
+          TypedViewHolder.setContentView(this, TR.layout.qlscreen)
+        } else {
+          isMonitor = true
+          TypedViewHolder.setContentView(this, TR.layout.monitor)
+        }
+        update
+        true
+      case _ => false
+    }
   }
 
   override def onConfigurationChanged(cfg: Configuration) = update
@@ -195,12 +220,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   }
 
   def doView: Unit = {
-    try {
-      val intent = new Intent(this, classOf[QLScreenActivity])
-      startActivity(intent)
-    } catch {
-      case e: Exception => writeError(e.toString)
-    }
+    val monitorView = TypedViewHolder.setContentView(this, TR.layout.qlscreen)
   }
 
 }
