@@ -21,8 +21,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   lazy val memText = findView(TR.memText)
   lazy val cmdInput = findView(TR.commandInput)
 
-  lazy val mon =
-    new qdos.QDOSMonitor(romFile = context.getResources.openRawResource(TR.raw.rom.resid))
+  lazy val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
