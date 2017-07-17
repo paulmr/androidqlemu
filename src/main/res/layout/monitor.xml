@@ -8,6 +8,7 @@
   <TextView
       android:id="@+id/regText"
       android:typeface="monospace"
+      android:layout_weight="1"
       android:layout_gravity="top"
       android:layout_margin="16dp"
       android:layout_width="match_parent"
@@ -17,27 +18,38 @@
   <TextView
       android:id="@+id/memText"
       android:typeface="monospace"
+      android:layout_weight="1"
       android:layout_gravity="center"
       android:layout_margin="16dp"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:textAppearance="@android:style/TextAppearance.Small"
       />
+  <Button
+      android:id="@+id/stepBtn"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="Step"
+      android:onClick="doStep" />
   <LinearLayout
       android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="match_parent">
+      android:layout_height="wrap_content">
+    <EditText
+        android:id="@+id/commandInput"
+        android:layout_weight="1"
+        android:typeface="monospace"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="esperanto"
+        android:textAppearance="@android:style/TextAppearance.Large"/>
     <Button
-        android:id="@+id/stepBtn"
+        android:id="@+id/enterBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Step"
-        android:onClick="doStep" />
-    <Button
-        android:id="@+id/resetBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Reset"
-        android:onClick="doReset" />
+        android:text="OK"
+        android:onClick="enterButton" />
   </LinearLayout>
 </LinearLayout>
