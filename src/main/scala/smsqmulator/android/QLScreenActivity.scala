@@ -21,13 +21,12 @@ class QLScreenActivity extends AppCompatActivity with TypedFindView {
   }
 
   def updateScreen = {
-    val x = surfaceHolder
-    //val canvas = surfaceHolder.lockCanvas
+    val canvas = surfaceHolder.lockCanvas
     // val w = canvas.getWidth
     // val h = canvas.getHeight
 
     // canvas.drawCircle(w / 2, h / 2, w / 2, new Paint())
-    //surfaceHolder.unlockCanvasAndPost(canvas)
+    surfaceHolder.unlockCanvasAndPost(canvas)
   }
 
 }
