@@ -1,12 +1,12 @@
 package smsqmulator.android
 
+import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
 import android.view.View
 import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.graphics.drawable.Animatable
 
 import java.io.{ PrintWriter, ByteArrayOutputStream }
 
@@ -166,6 +166,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
       case "go" =>
         mon.execute
         toastMsg("complete")
+        update
       case "b" =>
         parseNum(args.headOption) match {
           case None => toastMsg("Bad arg")
@@ -173,20 +174,33 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
             mon.addBreak(addr)
             toastMsg(f"added $addr%08x")
         }
+        update
+      case "view" =>
+        doView
       case "clear" =>
         mon.clearBreaks
+        update
       case "reset" =>
         mon.reset
+        update
       case _ =>
         toastMsg(s"unknown cmd: $cmd")
     }
-    update
   }
 
   def doReset: Unit = {
     mon.cpu.reset
     update
     toastMsg("reset")
+  }
+
+  def doView: Unit = {
+    try {
+      val intent = new Intent(this, classOf[QLScreenActivity])
+      startActivity(intent)
+    } catch {
+      case e: Exception => writeError(e.toString)
+    }
   }
 
 }
