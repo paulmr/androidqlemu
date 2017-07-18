@@ -59,7 +59,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
 
   def update = {
     updateRegisters
-    updateMemoryDump
+    updateMemoryDis(mon.cpu.getPC)
   }
 
   def writeError(s: String) = memText.setText(s)
@@ -115,44 +115,69 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   def isWide =
     cfg.orientation == Configuration.ORIENTATION_LANDSCAPE
 
-  private val DIS = 1
-  private val DUMP = 2
-  private var dumpType = DIS
+  def getPrintable(value: Int): Char =
+    if(value < ' ' || value > '~') '.'
+    else value.toChar
 
-  def updateMemoryDump = {
+  def updateMemoryDis(startAddr: Int) = {
     val sbuf = new scala.collection.mutable.ListBuffer[String]()
+    val memory = mon.addrSpace
 
-    if(dumpType == DIS) {
-      val cpu = mon.cpu
-      val pc = cpu.getPC
-      var start = pc
+    val cpu = mon.cpu
+    val pc = cpu.getPC
+    var start = startAddr
 
-      var count = 0
-      val num_instructions = if(isWide) 5 else 10
-      val memory = mon.addrSpace
-      while(start < memory.size() && count < num_instructions) {
-        val buffer = new java.lang.StringBuilder
-        if(start == cpu.getPC)
-          buffer.append("> ")
-        else if(mon.hasBreak(start))
-          buffer.append("! ")
-        else
-          buffer.append("  ")
+    var count = 0
+    val num_instructions = if(isWide) 5 else 10
 
-        val opcode = cpu.readMemoryWord(start)
-        val i = cpu.getInstructionFor(opcode)
-        val di = i.disassemble(start, opcode)
+    while(start < memory.size() && count < num_instructions) {
+      val buffer = new java.lang.StringBuilder
+      if(start == cpu.getPC) buffer.append("> ") else buffer.append("  ")
 
-        if(isWide) {
-          di.formatInstruction(buffer)
-        } else {
-          di.shortFormat(buffer)
-        }
+      val opcode = cpu.readMemoryWord(start)
+      val i = cpu.getInstructionFor(opcode)
+      val di = i.disassemble(start, opcode)
 
-        sbuf += buffer.toString()
-        start += di.size()
-        count += 1
+      if(isWide) {
+        di.formatInstruction(buffer)
+      } else {
+        di.shortFormat(buffer)
       }
+
+      sbuf += buffer.toString()
+      start += di.size()
+      count += 1
+    }
+    memText.setText(sbuf.toList.mkString("\n"))
+  }
+
+  def updateMemoryDump(start: Int) = {
+    val sbuf = new scala.collection.mutable.ListBuffer[String]()
+    val memory = mon.addrSpace
+
+    val cpu = mon.cpu
+    val endAddr = memory.getEndAddress()
+    var addr = start
+
+    val sb = new StringBuilder(80);
+    val asc = new StringBuilder(16);
+
+    var y = 0
+    while(y < 10 && addr <= endAddr) {
+      sb.append("%08x".format(addr)).append(" ")
+      var x = 0
+      while(x < 4 && addr < endAddr) {
+        val b = cpu.readMemoryByte(addr);
+        sb.append("%02x ".format(b));
+        asc.append(getPrintable(b));
+        addr += 1
+        x += 1
+      }
+      sb.append(" ").append(asc)
+      sbuf += sb.toString()
+      sb.delete(0, sb.length())
+      asc.delete(0, asc.length())
+      y += 1
     }
     memText.setText(sbuf.toList.mkString("\n"))
   }
@@ -223,4 +248,21 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
     val monitorView = TypedViewHolder.setContentView(this, TR.layout.qlscreen)
   }
 
+  def doDis(v: View): Unit = {
+    updateMemoryDis(parseInt(dumpAddrText.getText.toString))
+  }
+
+  def doDump(v: View): Unit = {
+    try {
+      updateMemoryDump(parseInt(dumpAddrText.getText.toString))
+    } catch {
+      case e: NumberFormatException => writeError("Bad number: " + e.toString)
+    }
+  }
+
+  def parseInt(value: String): Int =
+    if(value.startsWith("$"))
+      (java.lang.Long.parseLong(value.substring(1), 16) & 0x0ffffffffL).toInt
+    else
+      (java.lang.Long.parseLong(value) & 0x0ffffffffL).toInt
 }

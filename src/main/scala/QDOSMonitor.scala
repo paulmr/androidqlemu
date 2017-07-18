@@ -56,6 +56,12 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream) {
 }
 
 object QDOSMonitor {
+  def parseInt(value: String) =
+    if(value.startsWith("$"))
+      (java.lang.Long.parseLong(value.substring(1), 16) & 0x0ffffffffL).toInt
+    else
+      (java.lang.Long.parseLong(value) & 0x0ffffffffL).toInt
+
   def main(args: Array[String]) = {
     val q = new QDOSMonitor(
       romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom"))
