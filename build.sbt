@@ -6,6 +6,8 @@ minSdkVersion := "19"
 
 platformTarget := "android-23"
 
+scalacOptions in Compile += "-deprecation"
+
 javacOptions in Compile ++= "-source" :: "1.7" :: "-target" :: "1.7" :: Nil
 
 libraryDependencies ++=

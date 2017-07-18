@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.widget.Toast
 import android.view.View
 import android.app.Activity
+import android.util.Log
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 
@@ -13,6 +14,8 @@ import java.io.{ PrintWriter, ByteArrayOutputStream }
 import m68k.cpu.Cpu
 
 class MonitorActivity extends AppCompatActivity with TypedFindView with QLActionBar {
+  private val TAG = "QLMonitor"
+
   // allows accessing `.value` on TR.resource.constants
   implicit val context = this
   lazy val cfg = context.getResources.getConfiguration
@@ -44,7 +47,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
     updateMemoryDis(mon.cpu.getPC)
   }
 
-  def writeError(s: String) = memText.setText(s)
+  def writeError(s: String) = Log.e(TAG, s)
 
   def hexStr(i: Int): String = f"${i}%08X"
 
