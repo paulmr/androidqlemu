@@ -1,9 +1,9 @@
 dependencies:
         cache_directories:
-                - "~/.android/output"
+                - "~/.android"
 general:
         artifacts:
-                - "target/android/generated/output"
+                - "target/android/output"
 test:
         post:
                 - sbt android:package
