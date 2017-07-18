@@ -201,16 +201,6 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
     cmdInput.getText().clear()
   }
 
-  def parseNum(sOpt: Option[String]) = {
-    sOpt map { s =>
-      if(s.startsWith("$")) {
-        Integer.parseInt(s.tail, 16)
-      } else {
-        s.toInt
-      }
-    }
-  }
-
   def doCmd(cmd: String, args: Seq[String]) = {
     cmd.toLowerCase match {
       case "go" =>
@@ -218,13 +208,17 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
         toastMsg("complete")
         update
       case "b" =>
-        parseNum(args.headOption) match {
+        args.headOption.map(parseNum _) match {
           case None => toastMsg("Bad arg")
           case Some(addr) =>
             mon.addBreak(addr)
             toastMsg(f"added $addr%08x")
         }
         update
+      case "d" =>
+        updateMemoryDump(args.headOption.map(parseNum _).getOrElse(mon.cpu.getPC))
+      case "dis" =>
+        updateMemoryDis(args.headOption.map(parseNum _).getOrElse(mon.cpu.getPC))
       case "view" =>
         doView
       case "clear" =>
@@ -248,19 +242,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
     val monitorView = TypedViewHolder.setContentView(this, TR.layout.qlscreen)
   }
 
-  def doDis(v: View): Unit = {
-    updateMemoryDis(parseInt(dumpAddrText.getText.toString))
-  }
-
-  def doDump(v: View): Unit = {
-    try {
-      updateMemoryDump(parseInt(dumpAddrText.getText.toString))
-    } catch {
-      case e: NumberFormatException => writeError("Bad number: " + e.toString)
-    }
-  }
-
-  def parseInt(value: String): Int =
+  def parseNum(value: String): Int =
     if(value.startsWith("$"))
       (java.lang.Long.parseLong(value.substring(1), 16) & 0x0ffffffffL).toInt
     else
