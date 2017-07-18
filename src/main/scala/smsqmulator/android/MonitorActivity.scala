@@ -42,14 +42,8 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   override def onOptionsItemSelected(item: MenuItem) = {
     item.getItemId match {
       case R.id.showScreen =>
-        if(isMonitor) {
-          isMonitor = false
-          TypedViewHolder.setContentView(this, TR.layout.qlscreen)
-        } else {
-          isMonitor = true
-          TypedViewHolder.setContentView(this, TR.layout.monitor)
-        }
-        update
+        val i = new Intent(this, classOf[ScreenActivity])
+        startActivity(i)
         true
       case _ => false
     }
@@ -219,8 +213,6 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
         updateMemoryDump(args.headOption.map(parseNum _).getOrElse(mon.cpu.getPC))
       case "dis" =>
         updateMemoryDis(args.headOption.map(parseNum _).getOrElse(mon.cpu.getPC))
-      case "view" =>
-        doView
       case "clear" =>
         mon.clearBreaks
         update
@@ -236,10 +228,6 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
     mon.cpu.reset
     update
     toastMsg("reset")
-  }
-
-  def doView: Unit = {
-    val monitorView = TypedViewHolder.setContentView(this, TR.layout.qlscreen)
   }
 
   def parseNum(value: String): Int =

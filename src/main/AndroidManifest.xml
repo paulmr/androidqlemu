@@ -6,12 +6,16 @@
                  android:name="smsqmulator.android.QDOSApplication">
         <activity android:name="MonitorActivity"
                   android:theme="@style/Theme.AppCompat.Light"
-                  android:label="QDOSMonitor"
+                  android:label="QL Monitor"
                   android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="ScreenActivity"
+                  android:theme="@style/Theme.AppCompat.Light"
+                  android:label="QL Screen"
+                  android:windowSoftInputMode="stateHidden|adjustNothing"/>
     </application>
 </manifest>
