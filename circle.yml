@@ -3,7 +3,7 @@ dependencies:
                 - "~/.android/output"
 general:
         artifacts:
-                - "target"
+                - "target/android/generated/output"
 test:
         post:
                 - sbt android:package
