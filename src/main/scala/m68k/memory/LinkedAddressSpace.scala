@@ -16,7 +16,9 @@ class LinkedAddressSpace(low: AddressSpace, high: AddressSpace) extends AddressS
     if(addr < (low.getEndAddress)) low else high
   }
 
-  def isValid(addr: Int) = low.isValid(addr) || high.isValid(addr)
+  def isValid(addr: Int) = {
+    low.isValid(addr) || high.isValid(addr)
+  }
 
 
   def internalReadByte(addr: Int) = forAddr(addr).readByte(addr)
