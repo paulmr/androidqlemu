@@ -43,13 +43,14 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
       updateScreen
     }
     def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = {
+      Log.d(TAG, "surfaceChanged")
       updateScreen
     }
     def surfaceDestroyed(holder: SurfaceHolder) = {
     }
   })
 
-  def withCanvas(f: Canvas => Unit) = {
+  protected def withCanvas(f: Canvas => Unit) = {
     val canvas = holder.lockCanvas(null)
     try {
       f(canvas)
@@ -60,7 +61,7 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
     }
   }
 
-  def updateBitmap = {
+  protected def updateBitmap = {
     val screenBase = 0x20000
 
     val pixels = ((0 until 0x8000) by 2) flatMap { count =>
@@ -72,10 +73,12 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
     bitmap.setPixels(pixels.toArray, 0, 256, 0, 0, 256, 256)
   }
 
-  def updateScreen = withCanvas { c =>
+  protected def updateScreen = withCanvas { c =>
     Log.d(TAG, s"ch: ${c.getHeight}, cw: ${c.getWidth}")
     updateBitmap
     c.drawBitmap(Bitmap.createScaledBitmap(bitmap, c.getWidth, c.getHeight, false), getMatrix, null)
     //c drawText ("hello world", 10, 10, QLColours.red)
   }
+
+  def update = updateScreen
 }

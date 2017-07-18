@@ -10,9 +10,10 @@ import java.io.{ IOException, InputStream, FileInputStream }
 
 class QDOSMonitor(ramSize: Int = 128, romFile: InputStream) {
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
-  val rom = new InputStreamAddressSpace(romFile, 0)
-  val ram = new MemorySpace            (ramSize, 0x20000)
-  val io  = new MemorySpace            (32,      0x18000)
+  val rom  = new InputStreamAddressSpace(romFile, 0)
+  val prom = new NullAddressSpace       (0xC000,  0x18000 - 1)
+  val ram  = new MemorySpace            (ramSize, 0x20000)
+  val io   = new MemorySpace            (32,      0x18000)
 
   private var breaks = Vector.empty[Int]
 

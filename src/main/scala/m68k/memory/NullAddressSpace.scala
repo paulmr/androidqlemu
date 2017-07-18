@@ -1,23 +1,18 @@
 package m68k.memory
 
-class NullAddressSpace(startAddress: Int) extends AddressSpace {
+class NullAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends AddressSpace {
 
-  def getEndAddress = startAddress
-  def getStartAddress = startAddress
+  def size = getEndAddress - getStartAddress
 
-  def size = 0
+  def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
 
-  def isValid(addr: Int) = false
+  def internalReadByte(addr: Int) = 0
+  def internalReadLong(addr: Int) = 0
+  def internalReadWord(addr: Int) = 0
 
-  def internalReadByte(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
-  def internalReadLong(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
-  def internalReadWord(addr: Int) = throw new MemoryException(s"Invalid addr $addr")
-  def internalWriteByte(addr: Int, value: Int) =
-    throw new MemoryException(s"Invalid addr $addr")
-  def internalWriteWord(addr: Int, value: Int) =
-    throw new MemoryException(s"Invalid addr $addr")
-  def internalWriteLong(addr: Int, value: Int) =
-    throw new MemoryException(s"Invalid addr $addr")
+  def internalWriteByte(addr: Int, value: Int) = ()
+  def internalWriteWord(addr: Int, value: Int) = ()
+  def internalWriteLong(addr: Int, value: Int) = ()
 
   def readByte(addr: Int) = internalReadByte(addr)
   def readLong(addr: Int) = internalReadLong(addr)
