@@ -1,6 +1,9 @@
 dependencies:
         cache_directories:
                 - "~/.android/output"
+general:
+        artifacts:
+                - "target"
 test:
         post:
                 - sbt android:package
