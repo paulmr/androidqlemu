@@ -1,11 +1,12 @@
 package smsqmulator.android
 
+import android.content.Intent
 import android.content.res.Configuration
-import android.view.View
+import android.widget.Toast
+import android.view.{ View, Menu, MenuItem }
 import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.graphics.drawable.Animatable
 
 import java.io.{ PrintWriter, ByteArrayOutputStream }
 
@@ -18,15 +19,40 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
 
   lazy val regText = findView(TR.regText)
   lazy val memText = findView(TR.memText)
+  lazy val cmdInput = findView(TR.commandInput)
 
-  lazy val mon =
-    new qdos.QDOSMonitor(romFile = context.getResources.openRawResource(TR.raw.rom.resid))
+  lazy val screen = findView(TR.qlScreenView)
+
+  lazy val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
+
+  var isMonitor = true
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
     // type ascription is required due to SCL-10491
     val monitorView = TypedViewHolder.setContentView(this, TR.layout.monitor)
     update
+  }
+
+  override def onCreateOptionsMenu(menu: Menu) = {
+    getMenuInflater.inflate(TR.menu.action.resid, menu)
+    true
+  }
+
+  override def onOptionsItemSelected(item: MenuItem) = {
+    item.getItemId match {
+      case R.id.showScreen =>
+        if(isMonitor) {
+          isMonitor = false
+          TypedViewHolder.setContentView(this, TR.layout.qlscreen)
+        } else {
+          isMonitor = true
+          TypedViewHolder.setContentView(this, TR.layout.monitor)
+        }
+        update
+        true
+      case _ => false
+    }
   }
 
   override def onConfigurationChanged(cfg: Configuration) = update
@@ -75,7 +101,14 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
       f"SR : ${cpu.getSR}%04x $flagView"
     )
 
-    regText.setText(List(otherRegs, dregs, aregs).map(makeCols(if(isWide) 5 else 3, _))
+    val bps = mon.getBreaks.map(addr => f"$addr%08x").mkString(",")
+
+    val stateInfo = List(
+      s"Clk: ${mon.getTime}",
+      s"Bps: ${bps}"
+    )
+
+    regText.setText(List(otherRegs, dregs, aregs, stateInfo).map(makeCols(if(isWide) 5 else 3, _))
       .mkString("\n\n"))
   }
 
@@ -99,7 +132,12 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
       val memory = mon.addrSpace
       while(start < memory.size() && count < num_instructions) {
         val buffer = new java.lang.StringBuilder
-        if(start == cpu.getPC) buffer.append("> ") else buffer.append("  ")
+        if(start == cpu.getPC)
+          buffer.append("> ")
+        else if(mon.hasBreak(start))
+          buffer.append("! ")
+        else
+          buffer.append("  ")
 
         val opcode = cpu.readMemoryWord(start)
         val i = cpu.getInstructionFor(opcode)
@@ -120,14 +158,69 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
   }
 
   def doStep(v: View): Unit = {
-    val time = mon.cpu.execute
-    // toast it?
+    mon.step
     update
   }
 
-  def doReset(v: View): Unit = {
+  def toastMsg(msg: String, duration: Int = Toast.LENGTH_SHORT) =
+    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+
+  def enterButton(v: View): Unit = {
+    /* we should run the command contained in the command input text field */
+    val cmd = cmdInput.getText().toString().split(" ")
+    cmd.headOption match {
+      case None      => toastMsg("No command")
+      case Some("")  => toastMsg("No command")
+      case Some(cmdText) => doCmd(cmdText, cmd.tail)
+    }
+    cmdInput.getText().clear()
+  }
+
+  def parseNum(sOpt: Option[String]) = {
+    sOpt map { s =>
+      if(s.startsWith("$")) {
+        Integer.parseInt(s.tail, 16)
+      } else {
+        s.toInt
+      }
+    }
+  }
+
+  def doCmd(cmd: String, args: Seq[String]) = {
+    cmd.toLowerCase match {
+      case "go" =>
+        mon.execute
+        toastMsg("complete")
+        update
+      case "b" =>
+        parseNum(args.headOption) match {
+          case None => toastMsg("Bad arg")
+          case Some(addr) =>
+            mon.addBreak(addr)
+            toastMsg(f"added $addr%08x")
+        }
+        update
+      case "view" =>
+        doView
+      case "clear" =>
+        mon.clearBreaks
+        update
+      case "reset" =>
+        mon.reset
+        update
+      case _ =>
+        toastMsg(s"unknown cmd: $cmd")
+    }
+  }
+
+  def doReset: Unit = {
     mon.cpu.reset
     update
+    toastMsg("reset")
+  }
+
+  def doView: Unit = {
+    val monitorView = TypedViewHolder.setContentView(this, TR.layout.qlscreen)
   }
 
 }

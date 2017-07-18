@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="smsqmulator.android">
     <application android:label="@string/app_name"
-                 android:icon="@drawable/scala_android">
+                 android:icon="@drawable/scala_android"
+                 android:name="smsqmulator.android.QDOSApplication">
         <activity android:name="MonitorActivity"
-                  android:theme="@style/Theme.AppCompat"
-                  android:label="@string/app_name">
+                  android:theme="@style/Theme.AppCompat.Light"
+                  android:label="QDOSMonitor"
+                  android:windowSoftInputMode="stateHidden|adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
