@@ -3,7 +3,7 @@ package smsqmulator.android
 import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
-import android.view.{ View, Menu, MenuItem }
+import android.view.View
 import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -12,7 +12,7 @@ import java.io.{ PrintWriter, ByteArrayOutputStream }
 
 import m68k.cpu.Cpu
 
-class MonitorActivity extends AppCompatActivity with TypedFindView {
+class MonitorActivity extends AppCompatActivity with TypedFindView with QLActionBar {
   // allows accessing `.value` on TR.resource.constants
   implicit val context = this
   lazy val cfg = context.getResources.getConfiguration
@@ -34,22 +34,10 @@ class MonitorActivity extends AppCompatActivity with TypedFindView {
     update
   }
 
-  override def onCreateOptionsMenu(menu: Menu) = {
-    getMenuInflater.inflate(TR.menu.action.resid, menu)
-    true
-  }
-
-  override def onOptionsItemSelected(item: MenuItem) = {
-    item.getItemId match {
-      case R.id.showScreen =>
-        val i = new Intent(this, classOf[ScreenActivity])
-        startActivity(i)
-        true
-      case _ => false
-    }
-  }
-
   override def onConfigurationChanged(cfg: Configuration) = update
+
+  def swapScreen =
+    startActivity(new Intent(this, classOf[ScreenActivity]))
 
   def update = {
     updateRegisters
