@@ -7,6 +7,8 @@ import android.view.{ SurfaceView, SurfaceHolder }
 
 import android.graphics.{ Paint, Canvas, Bitmap, Color }
 
+import smsqmulator.util.Ticker
+
 class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(context, attrs) {
 
   private val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
@@ -20,36 +22,36 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
 
   private var pixels = new Array[Int](gWidth * gHeight)
 
+  val ticker = Ticker.fiftyHz(updateScreen _)
+
   // this may need to be modified if the screen mode changes etc, although I think we might be able to call Config
   private lazy val bitmap = Bitmap.createBitmap(gWidth, gHeight, Bitmap.Config.RGB_565)
 
   val holder = getHolder
 
   holder addCallback (new SurfaceHolder.Callback {
-    def surfaceCreated(holder: SurfaceHolder) = {
-    }
-    def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = {
-      updateScreen
-    }
-    def surfaceDestroyed(holder: SurfaceHolder) = {
-    }
+    def surfaceCreated(holder: SurfaceHolder) = { ticker.start() }
+    def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = {}
+    def surfaceDestroyed(holder: SurfaceHolder) = { ticker.finish() }
   })
 
   protected def withCanvas(f: Canvas => Unit) = {
     val canvas = holder.lockCanvas(null)
-    try {
-      f(canvas)
-    } catch {
-      case e: Exception => Log.d(TAG, e.toString)
-    } finally {
-      holder.unlockCanvasAndPost(canvas)
+    if(canvas != null) {
+      try {
+        f(canvas)
+      } catch {
+        case e: Exception => Log.e(TAG, e.toString)
+      } finally {
+        holder.unlockCanvasAndPost(canvas)
+      }
     }
   }
 
   val pixelmask = Vector(0x203,0x80c,0x2030,0x80c0)
 
   protected def updateBitmap = {
-    val startTime = System.nanoTime
+    // val startTime = System.nanoTime
     var addr = 0x20000
     var pixelNum = 0
 
@@ -88,8 +90,7 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
       addr += 2
     }
     bitmap.setPixels(pixels, 0, gWidth, 0, 0, gWidth, gHeight)
-    val endTime = System.nanoTime
-    Log.d(TAG, s"screen update took ${(endTime - startTime) / 1000000} ms")
+    // val endTime = System.nanoTime
   }
 
   protected def updateScreen = withCanvas { c =>

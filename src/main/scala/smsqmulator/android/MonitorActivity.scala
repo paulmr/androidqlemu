@@ -198,12 +198,10 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
   def doCmd(cmd: String, args: Seq[String]) = {
     cmd.toLowerCase match {
       case "go" =>
-        mon.execute.onComplete { _ =>
-          toastMsg("complete")
-          update
-        }
-        update
-        toastMsg("running")
+        doRun
+      case "gos" =>
+        doRun
+        swapScreen
       case "stop" =>
         if(mon.isRunning) mon.stop else toastMsg("Not running")
         update
@@ -228,6 +226,15 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
       case _ =>
         toastMsg(s"unknown cmd: $cmd")
     }
+  }
+
+  def doRun = {
+    mon.execute.onComplete { _ =>
+      toastMsg("complete")
+      update
+    }
+    update
+    toastMsg("running")
   }
 
   def doReset: Unit = {

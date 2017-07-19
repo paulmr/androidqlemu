@@ -29,4 +29,5 @@ class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionB
   }
 
   override def onConfigurationChanged(cfg: Configuration) = ()
+
 }
