@@ -22,7 +22,7 @@ class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionB
   def swapScreen =
     startActivity(new Intent(this, classOf[MonitorActivity]))
 
-  override def onKeyUp(key: Int, keyev: KeyEvent) = {
+  override def onKeyDown(key: Int, keyev: KeyEvent) = {
     key match {
       case KeyEvent.KEYCODE_VOLUME_DOWN =>
         mon.enqueue(mon.sysVar_CUR_KEY_QUEUE, 236)
