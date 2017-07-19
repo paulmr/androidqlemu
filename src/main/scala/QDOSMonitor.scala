@@ -43,9 +43,9 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   def enqueue(addr: Int, value: Int) = {
     val eof = cpu.readMemoryByte(addr)
-    if(eof != 0) {
+    if(eof == 0) {
       val writeAddr = cpu.readMemoryLong(addr + 0x8)
-      cpu.writeMemoryByte(writeAddr, value & 0xFF)
+      cpu.writeMemoryByte(writeAddr, value)
       cpu.writeMemoryLong(addr + 0x8, writeAddr + 1)
     }
   }
