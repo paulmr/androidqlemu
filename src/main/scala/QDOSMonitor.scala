@@ -8,10 +8,13 @@ import m68k.memory.syntax._
 
 import java.io.{ IOException, InputStream, FileInputStream }
 
-class QDOSMonitor(ramSize: Int = 128, romFile: InputStream) {
+class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None) {
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
-  val prom = new NullAddressSpace       (0xC000,  0x18000 - 1)
+  val prom = promFile match {
+    case None => new NullAddressSpace       (0xC000,  0x18000 - 1)
+    case Some(prom) => new InputStreamAddressSpace(prom, 0xC000)
+  }
   val ram  = new MemorySpace            (ramSize, 0x20000)
   val io   = new MemorySpace            (32,      0x18000)
 
@@ -20,7 +23,7 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream) {
   private var time = 0
   def getTime = time
 
-  val addrSpace = rom ~> io ~> ram
+  val addrSpace = rom ~> prom ~> io ~> ram
 
   println(f"Memory: ${addrSpace.getStartAddress}%08x => ${addrSpace.getEndAddress}%08x")
 
