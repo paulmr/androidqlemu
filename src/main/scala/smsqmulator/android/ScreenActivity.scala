@@ -25,7 +25,7 @@ class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionB
   override def onKeyUp(key: Int, keyev: KeyEvent) = {
     key match {
       case KeyEvent.KEYCODE_VOLUME_DOWN =>
-        mon.enqueue(0x29068, 236)
+        mon.enqueue(mon.sysVar_CUR_KEY_QUEUE, 236)
         true
       case _ => false
     }

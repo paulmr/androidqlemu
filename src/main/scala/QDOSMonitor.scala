@@ -24,8 +24,6 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
   val ram  = new MemorySpace            (ramSize, 0x20000)
   val io   = new IOAddressSpace         (0x10000, 0x20000 - 1)
 
-  io.setInterrupt(IOAddressSpace.INT_FINT)
-
   private var breaks = Vector.empty[Int]
 
   private var time = 0
@@ -41,14 +39,30 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   lazy val getMonitor = new Monitor(cpu, addrSpace)
 
+  /* this behaves the same as the QDOS trap IO.QIN and allows us to
+   * insert data into the queues, e.g. the keyboard queue. */
   def enqueue(addr: Int, value: Int) = {
     val eof = cpu.readMemoryByte(addr)
     if(eof == 0) {
-      val writeAddr = cpu.readMemoryLong(addr + 0x8)
+      var writeAddr = cpu.readMemoryLong(addr + 0x8)
       cpu.writeMemoryByte(writeAddr, value)
-      cpu.writeMemoryLong(addr + 0x8, writeAddr + 1)
+      writeAddr += 1
+      if(writeAddr > cpu.readMemoryLong(addr + 0x4))
+        writeAddr = cpu.readMemoryLong(addr + 0x10) // reset to start of queue
+      cpu.writeMemoryLong(addr + 0x8, writeAddr)
     }
   }
+
+  val SYS_VAR_BASE = 0x28000
+
+  def sysVar(offset: Int, size: Int) =
+    size match {
+      case 1 => cpu.readMemoryByte(SYS_VAR_BASE + offset)
+      case 2 => cpu.readMemoryWord(SYS_VAR_BASE + offset)
+      case _ => cpu.readMemoryLong(SYS_VAR_BASE + offset)
+    }
+
+  def sysVar_CUR_KEY_QUEUE = sysVar(0x4c, 4)
 
   def stop = running = false
 
