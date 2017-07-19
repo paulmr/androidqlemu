@@ -240,7 +240,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
         } else toastMsg("bad args")
       case "q" =>
         if(args.length == 2) {
-          val qaddr = parseNum(args(0))
+          val addr = parseNum(args(0))
           val value = parseNum(args(1))
           mon.enqueue(addr, value)
         } else toastMsg("bad args")
