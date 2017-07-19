@@ -214,6 +214,10 @@ public class Monitor implements Runnable
 			{
 				showHelp(tokens);
 			}
+                        else if(cmd.equals("raise"))
+                        {
+                                handleRaise(tokens);
+                        }
 			else
 			{
 				writer.println("Unknown command: " + tokens[0]);
@@ -882,6 +886,16 @@ public class Monitor implements Runnable
 			}
 		}
 	}
+
+        protected void handleRaise(String[] tokens)
+        {
+                int prio = 2;
+                if(tokens.length == 2) {
+                        prio = parseInt(tokens[1]);
+                }
+                writer.println("Raising interrupt: " + prio);
+                cpu.raiseInterrupt(prio);
+        }
 
 	protected void handleLoad(String[] tokens)
 	{

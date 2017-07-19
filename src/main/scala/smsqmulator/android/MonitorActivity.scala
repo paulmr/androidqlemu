@@ -220,8 +220,21 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
       case "clear" =>
         mon.clearBreaks
         update
+      case "raise" =>
+        mon.cpu.raiseInterrupt(args.headOption.map(parseNum _).getOrElse(2))
+        update
       case "reset" =>
         mon.reset
+        update
+      case "m" =>
+        val size = args(0).head
+        val addr = parseNum(args(1))
+        val value = parseNum(args(2))
+        size match {
+          case 'b' => mon.cpu.writeMemoryByte(addr, value)
+          case 'w' => mon.cpu.writeMemoryWord(addr, value)
+          case 'l' => mon.cpu.writeMemoryLong(addr, value)
+        }
         update
       case _ =>
         toastMsg(s"unknown cmd: $cmd")

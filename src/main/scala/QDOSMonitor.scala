@@ -18,11 +18,13 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
   val prom = promFile match {
-    case None => new NullAddressSpace       (0xC000,  0x18000 - 1)
+    case None => new NullAddressSpace       (0xC000,  0x10000 - 1)
     case Some(prom) => new InputStreamAddressSpace(prom, 0xC000)
   }
   val ram  = new MemorySpace            (ramSize, 0x20000)
-  val io   = new MemorySpace            (32,      0x18000)
+  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1)
+
+  io.setInterrupt(IOAddressSpace.INT_FINT)
 
   private var breaks = Vector.empty[Int]
 
@@ -38,6 +40,15 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
   cpu.reset()
 
   lazy val getMonitor = new Monitor(cpu, addrSpace)
+
+  def enqueue(addr: Int, value: Int) = {
+    val eof = cpu.readMemoryByte(addr)
+    if(eof != 0) {
+      val writeAddr = cpu.readMemoryLong(addr + 0x8)
+      cpu.writeMemoryByte(writeAddr, value & 0xFF)
+      cpu.writeMemoryLong(addr + 0x8, writeAddr + 1)
+    }
+  }
 
   def stop = running = false
 
