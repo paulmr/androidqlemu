@@ -1,15 +1,16 @@
 package smsqmulator.android
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+
 import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
 import android.view.View
-import android.app.Activity
 import android.util.Log
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-
-import java.io.{ PrintWriter, ByteArrayOutputStream }
 
 import m68k.cpu.Cpu
 
@@ -37,12 +38,20 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
     update
   }
 
+  override def onResume() = {
+    super.onResume()
+    update
+  }
+
   override def onConfigurationChanged(cfg: Configuration) = update
 
   def swapScreen =
     startActivity(new Intent(this, classOf[ScreenActivity]))
 
   def update = {
+    val alpha = if(mon.isRunning) 0.5f else 1f
+    regText.setAlpha(alpha)
+    memText.setAlpha(alpha)
     updateRegisters
     updateMemoryDis(mon.cpu.getPC)
   }
@@ -189,8 +198,14 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
   def doCmd(cmd: String, args: Seq[String]) = {
     cmd.toLowerCase match {
       case "go" =>
-        mon.execute
-        toastMsg("complete")
+        mon.execute.onComplete { _ =>
+          toastMsg("complete")
+          update
+        }
+        update
+        toastMsg("running")
+      case "stop" =>
+        if(mon.isRunning) mon.stop else toastMsg("Not running")
         update
       case "b" =>
         args.headOption.map(parseNum _) match {

@@ -1,14 +1,20 @@
 package qdos
 
+import scala.concurrent.{ ExecutionContext, Future }
+
 import m68k.memory._
-import m68k.cpu.{ Cpu, MC68000 }
+import m68k.cpu.MC68000
 import m68k.Monitor;
 
 import m68k.memory.syntax._
 
-import java.io.{ IOException, InputStream, FileInputStream }
+import java.io.{ InputStream, FileInputStream }
 
 class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None) {
+  protected var running = false
+
+  def isRunning = running
+
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
   val prom = promFile match {
@@ -33,12 +39,18 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   lazy val getMonitor = new Monitor(cpu, addrSpace)
 
+  def stop = running = false
+
   def step = {
     time += cpu.execute
   }
 
-  def execute =
-    while(!hasBreak(cpu.getPC)) step
+  def execute(implicit ec: ExecutionContext) = {
+    running = true
+    Future {
+      while(isRunning && !hasBreak(cpu.getPC)) step
+    }
+  }
 
   def reset = {
     cpu.reset
