@@ -27,7 +27,6 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
 
   holder addCallback (new SurfaceHolder.Callback {
     def surfaceCreated(holder: SurfaceHolder) = {
-      updateScreen
     }
     def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = {
       updateScreen
@@ -57,7 +56,8 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
     // this logic is nabbed from smsqmulator (thanks!)
     while(addr < 0x28000) {
       val data = mon.ram.readWord(addr)
-      for (i <- 0 to 3) {
+      var i = 0
+      while(i < 4) {
         val colourData = (data & pixelmask(i))>>>(i*2)
         val colour = colourData match {
           case 0 =>
@@ -81,6 +81,7 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
             Color.WHITE // ? was ORANGE
         }
         pixels(pixelNum + (3 - i)) = colour
+        i += 1
       }
 
       pixelNum += 4
@@ -88,14 +89,11 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
     }
     bitmap.setPixels(pixels, 0, gWidth, 0, 0, gWidth, gHeight)
     val endTime = System.nanoTime
-    Log.d(TAG, s"took ${(endTime - startTime) / 1000000} ms")
+    Log.d(TAG, s"screen update took ${(endTime - startTime) / 1000000} ms")
   }
 
   protected def updateScreen = withCanvas { c =>
     updateBitmap
     c.drawBitmap(Bitmap.createScaledBitmap(bitmap, c.getWidth, c.getHeight, false), getMatrix, null)
-    //c drawText ("hello world", 10, 10, QLColours.red)
   }
-
-  def update = updateScreen
 }
