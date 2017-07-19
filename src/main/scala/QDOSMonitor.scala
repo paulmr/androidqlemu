@@ -49,6 +49,7 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
     running = true
     Future {
       while(isRunning && !hasBreak(cpu.getPC)) step
+      running = false // needed if stopped by break
     }
   }
 
