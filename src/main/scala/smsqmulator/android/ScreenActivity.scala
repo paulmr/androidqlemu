@@ -3,7 +3,7 @@ package smsqmulator.android
 import android.content.Intent
 
 import android.content.res.Configuration
-import android.view.{ View, Menu, MenuItem }
+import android.view.{ View, Menu, MenuItem, KeyEvent }
 import android.app.Activity
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -21,6 +21,15 @@ class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionB
 
   def swapScreen =
     startActivity(new Intent(this, classOf[MonitorActivity]))
+
+  override def onKeyUp(key: Int, keyev: KeyEvent) = {
+    key match {
+      case KeyEvent.KEYCODE_VOLUME_DOWN =>
+        mon.enqueue(0x29068, 236)
+        true
+      case _ => false
+    }
+  }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
