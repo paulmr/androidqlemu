@@ -1,7 +1,3 @@
-BUG - move to home screen while ql screen is displaying,
-when you come back it crashes (is thread trying to update
-screen after components have gone?)
-
 TODO - support mode 8 in the ql screen
 
 TODO - add display reg support so you can change display mode

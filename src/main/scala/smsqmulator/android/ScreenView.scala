@@ -23,16 +23,21 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
   private var pixels = new Array[Int](gWidth * gHeight)
 
   val ticker = Ticker.fiftyHz(updateScreen _)
+  ticker.start
 
   // this may need to be modified if the screen mode changes etc, although I think we might be able to call Config
   private lazy val bitmap = Bitmap.createBitmap(gWidth, gHeight, Bitmap.Config.RGB_565)
 
   val holder = getHolder
 
+  // when our surface goes away, we can't do any drawing so there is
+  // no point in being triggered by the ticker. It will continue to
+  // 'tick' but it won't tell us about it until we unpause it.
+
   holder addCallback (new SurfaceHolder.Callback {
-    def surfaceCreated(holder: SurfaceHolder) = { ticker.start() }
-    def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = {}
-    def surfaceDestroyed(holder: SurfaceHolder) = { ticker.finish() }
+    def surfaceCreated(holder: SurfaceHolder) = { ticker.unpause }
+    def surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) = { }
+    def surfaceDestroyed(holder: SurfaceHolder) = { ticker.pause }
   })
 
   protected def withCanvas(f: Canvas => Unit) = {
