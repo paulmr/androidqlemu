@@ -1,3 +1,9 @@
+TODO - better monitor - read a long/word, show sysvars etc
+
+TODO - save snapshots, and do so automatically when the application quits
+
+TODO - configuration file and activity
+
 TODO - support mode 8 in the ql screen
 
 TODO - add display reg support so you can change display mode
