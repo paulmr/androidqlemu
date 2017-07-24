@@ -4,7 +4,7 @@ package smsqmulator.android
 import android.app.Application
 import android.util.Log
 
-import java.io.{ FileInputStream, InputStream, IOException }
+import java.io.{ File, FileInputStream, InputStream, IOException }
 
 import smsqmulator.util.Logger
 
@@ -17,10 +17,13 @@ class QDOSApplication extends Application {
 
   lazy val promFile: Option[InputStream] = {
     try {
-      Some(new FileInputStream("/sdcard/Download/qlemu.rom"))
+      val fname = new File(getExternalFilesDir(null), "qlemu.rom")
+      val res = Some(new FileInputStream(fname))
+      Logger.log(s"using local rom ${fname.toString}")
+      res
     } catch {
       case e: IOException =>
-        Logger.log(s"local qlemu.rom not found, using packaged")
+        Logger.log(s"local qlemu.rom not found, using packaged (${e.toString})")
         Some(getResources.openRawResource(TR.raw.qlemurom.resid))
     }
   }
