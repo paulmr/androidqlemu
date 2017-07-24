@@ -19,19 +19,21 @@ class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends A
   def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
 
   def handleRead(addr: Int, size: Int): Int = {
+    //println(f"IOAddressSpace read [$size]: $addr%08x")
     addr match {
       case REG_PC_INTR =>
         PC_INTR
+      case REG_IPC_READ =>
+        1
       case _ =>
-        println(f"IOAddressSpace read [$size]: $addr%08x")
         0
     }
   }
 
   def handleWrite(addr: Int, size: Int, value: Int): Unit = {
+    println(f"IOAddressSpace write [$size]: $addr%08x => $value%08x/$value")
     addr match {
       case _ =>
-        println(f"IOAddressSpace write [$size]: $addr%08x => $value%08x/$value")
     }
   }
 
@@ -67,8 +69,10 @@ class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends A
 
 
 object IOAddressSpace {
-  val REG_PC_INTR    = 0x18021
   val REG_IPC_WRITE  = 0x18003
+  val REG_IPC_READ   = 0x18020
+  val REG_PC_INTR    = 0x18021
+
 
   val INT_FINT = 2
 }

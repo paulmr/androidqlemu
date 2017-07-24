@@ -46,6 +46,8 @@ public class Monitor implements Runnable
 	private boolean autoRegs;
 	private ArrayList<Integer> breakpoints;
 
+        private MonitorCallback cb = null;
+
 	public Monitor(Cpu cpu, AddressSpace memory)
 	{
 		this.cpu = cpu;
@@ -122,6 +124,10 @@ public class Monitor implements Runnable
 			}
 		}
 	}
+
+        public void setCB(MonitorCallback cb) {
+                this.cb = cb;
+        }
 
 	protected void handleCommand(String line)
 	{
@@ -237,6 +243,7 @@ public class Monitor implements Runnable
 				int time = cpu.execute();
 				count += time;
 				int addr = cpu.getPC();
+                                if(cb != null) cb.step(cpu);
 				if(breakpoints.contains(addr))
 				{
 					//time to stop

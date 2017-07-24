@@ -4,7 +4,8 @@ import scala.concurrent.{ ExecutionContext, Future }
 
 import m68k.memory._
 import m68k.cpu.MC68000
-import m68k.Monitor;
+import m68k.cpu.Cpu
+import m68k.{ Monitor, MonitorCallback };
 
 import m68k.memory.syntax._
 
@@ -66,9 +67,7 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   def stop = running = false
 
-  def step = {
-    time += cpu.execute
-  }
+  def step = time += cpu.execute
 
   def execute(implicit ec: ExecutionContext) = {
     running = true
@@ -107,6 +106,13 @@ object QDOSMonitor {
   def main(args: Array[String]) = {
     val q = new QDOSMonitor(
       romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom"))
+    )
+    q.getMonitor.setCB(
+      new MonitorCallback {
+        def step(cpu: Cpu) = {
+          if(cpu.getPC == 0x4af6) { println("stuffing key"); q.enqueue(q.sysVar_CUR_KEY_QUEUE, 236) }
+        }
+      }
     )
     q.getMonitor.run()
   }
