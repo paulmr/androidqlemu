@@ -9,8 +9,15 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 
-class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionBar {
+import qdos.QLKeyhandler
+
+class ScreenActivity extends AppCompatActivity
+    with TypedFindView
+    with QLActionBar
+    with QLKeyhandler {
   private val TAG = "QLScreenActivity"
+
+  type KeyT = Int
 
   // allows accessing `.value` on TR.resource.constants
   implicit val context = this
@@ -23,18 +30,11 @@ class ScreenActivity extends AppCompatActivity with TypedFindView with QLActionB
     startActivity(new Intent(this, classOf[MonitorActivity]))
 
   val keymap = Map(
-    KeyEvent.KEYCODE_VOLUME_DOWN -> 236,
-    KeyEvent.KEYCODE_A -> 97
+    KeyEvent.KEYCODE_VOLUME_DOWN -> QLKeyhandler.KEY_F2,
+    KeyEvent.KEYCODE_A -> QLKeyhandler.KEY_A
   )
 
-  override def onKeyDown(key: Int, keyev: KeyEvent) = {
-    keymap.get(key) match {
-      case Some(qlkey) =>
-        mon.enqueue(mon.sysVar_CUR_KEY_QUEUE, qlkey)
-        true
-      case None => false
-    }
-  }
+  override def onKeyDown(key: Int, keyev: KeyEvent) = doKey(key)
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)
