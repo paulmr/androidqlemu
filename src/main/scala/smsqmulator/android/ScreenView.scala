@@ -9,18 +9,26 @@ import android.graphics.{ Paint, Canvas, Bitmap, Color }
 
 import smsqmulator.util.Ticker
 
-class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(context, attrs) {
+import qdos.QLScreen
 
-  private val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
-  private val cpu = mon.cpu
+class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(context, attrs)
+    with QLScreen {
+
+  type ColorT = Int
+
+  val YELLOW = Color.YELLOW
+  val BLACK = Color.BLACK
+  val BLUE =  Color.BLUE
+  val RED = Color.RED
+  val MAGENTA  = Color.MAGENTA
+  val GREEN = Color.GREEN
+  val CYAN = Color.CYAN
+  val WHITE = Color.WHITE
+
+  val mon = context.getApplicationContext.asInstanceOf[QDOSApplication].qdosMonitor
+  val cpu = mon.cpu
 
   private val TAG = "QLScreenView"
-
-  // mode 4
-  private val gWidth = 256
-  private val gHeight = 256
-
-  private var pixels = new Array[Int](gWidth * gHeight)
 
   val ticker = Ticker.fiftyHz(updateScreen _)
   ticker.start
@@ -53,48 +61,8 @@ class ScreenView(context: Context, attrs: AttributeSet) extends SurfaceView(cont
     }
   }
 
-  val pixelmask = Vector(0x203,0x80c,0x2030,0x80c0)
-
   protected def updateBitmap = {
-    // val startTime = System.nanoTime
-    var addr = 0x20000
-    var pixelNum = 0
-
-    // this logic is nabbed from smsqmulator (thanks!)
-    while(addr < 0x28000) {
-      val data = mon.ram.readWord(addr)
-      var i = 0
-      while(i < 4) {
-        val colourData = (data & pixelmask(i))>>>(i*2)
-        val colour = colourData match {
-          case 0 =>
-            Color.BLACK
-          case 1 =>
-            Color.BLUE
-          case 2 =>
-            Color.RED
-          case 3 =>
-            Color.MAGENTA
-          case 0x200 =>
-            Color.GREEN
-          case 0x201 =>
-            Color.CYAN
-          case 0x202 =>
-            Color.YELLOW
-          case 0x203 =>
-            Color.WHITE
-          case _ =>
-            Log.e(TAG, f"Unkown colour: $colourData%x (defaulting)")
-            Color.WHITE // ? was ORANGE
-        }
-        pixels(pixelNum + (3 - i)) = colour
-        i += 1
-      }
-
-      pixelNum += 4
-      addr += 2
-    }
-    bitmap.setPixels(pixels, 0, gWidth, 0, 0, gWidth, gHeight)
+    bitmap.setPixels(doQLScreen, 0, gWidth, 0, 0, gWidth, gHeight)
     // val endTime = System.nanoTime
   }
 
