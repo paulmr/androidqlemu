@@ -2,44 +2,63 @@
 
 ;;; QL PROM header
 
-        DC.L $4AFB0001
+        dc.l $4AFB0001
 
-        DC.W 0                  ; no sbasic funcs
+        dc.w 0                  ; no sbasic funcs
 
-        DC.W init                 ; init ptr (relative to start of rom)
+        dc.w init                 ; init ptr (relative to start of rom)
 
-        DC.W 8
-        DC.B "QLEMU001"
+        dc.w 8
+        dc.b "QLEMU001"
 
 ;;;  init starts here
 init:
-        MT_ALRES #$40           ; alloc 40 bytes
+	jsr boot_dev(pc)
+	rts
 
-        ;; A0 now points to the link block address
-        LEA input_output(PC),A1
-        MOVE.L a1, $1C(a0)
-        MOVE.L a1, $20(a0)
-        MOVE.L a1, $24(a0)
-        MOVE.L a1, $28(a0)
+;;; create a dummy boot device
+boot_dev:
+        MT_ALRES #$28           ; allocate room for linkage block
 
-	lea NAME(pc),a3
-	lea $3c(a0),a4
-	jsr COPYSTR(pc)
+	move.l a0, a1
+	;; A1 now points to the link block address
 
-	MT_LDD a0
+	lea boot_open(pc),a2
+	move.l a2, $1C(a1)
 
-	RTS
+        lea input_output(pc),a2
+        move.l a2, $20(a1)
+        move.l a2, $24(a1)
+
+	lea $18(a1),a0          ; ready for link
+        qtrap #mt_liod, #1
+
+	rts
+
+boot_open:
+        jmp .notfound(pc)
+        ;; a0 contains the address of the filename
+	move.l a0,a3
+        lea name(pc),a4
+        jsr cmpstr(pc)
+        tst.b d0
+        bne .notfound
+
+.notfound:
+        move.l #ERR_NF,d0
+        rts
 
 input_output:
-        RTS
+        rts
 
 
 	INCLUDE util.asm
 
-NAME:	dc.w 4
+name:	dc.w 4
 	dc.b "BOOT"
 
 ;;;  pad out to the correct size
         ORG $4000-1
-        DC.B $AB
+        dc.b $AB
+
         END

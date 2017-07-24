@@ -1,12 +1,21 @@
-COPYSTR:
-	MOVE.W (a3)+,d0
-	MOVE.w d0,(a4)+
-LOOP:
-	TST d0
-	BEQ done
-	MOVE.b (a3)+,(a4)+
-	BRA LOOP
-done:	rts
+cmpstr:
+        moveq #0, d0
+	move.w (a3)+,d1
+	move.w (a4)+,d2
+        cmp d1,d2
+        bne .nomatch
+.loop:
+	tst.w d1
+	beq .done
+        move.b (a3)+,d3
+	move.b (a4)+,d4 
+	cmp.b d3,d4
+        bne .nomatch
+        jmp .loop
+.nomatch:
+        move #-1, d0
+.done:
+        rts
 
 
 	

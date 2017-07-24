@@ -1,14 +1,21 @@
-QTRAP:  MACRO tnum, ttype
-        MOVE.L tnum,d0
-        TRAP ttype
+;; traps
+;;
+;; #1
+
+mt_liod equ $20
+
+;; error keys
+
+ERR_NF: equ $-7
+
+;; macros
+
+qtrap:  MACRO tnum, ttype
+        move.l tnum,d0
+        trap ttype
         ENDM
 
-MT_ALRES: MACRO byte_count
-        MOVE.L byte_count,d1
-        QTRAP #$E, #1
-        ENDM
-
-MT_LDD:        MACRO addr
-        MOVEA.L addr, a0
-        QTRAP #$22, #1
+mt_alres: MACRO byte_count
+        move.l byte_count,d1
+        qtrap #$e, #1
         ENDM
