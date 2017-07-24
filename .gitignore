@@ -4,3 +4,4 @@ bin/
 local.properties
 proguard-sbt.txt
 rom
+/src/main/res/raw/qlemurom

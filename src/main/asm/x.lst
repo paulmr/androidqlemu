@@ -1,0 +1,29 @@
+000000                  	INCLUDE qdos.inc
+                        QTRAP:  MACRO tnum, ttype
+                                MOVE.L d0,tnum
+                                TRAP ttype
+                                ENDM
+
+                        MT_ALRES: MACRO byte_count
+                                MOVE.L byte_count,d1
+                                QTRAP $E, #1
+                                ENDM
+
+                        ;;; QL PROM header
+
+000000 4AFB0001                 DC.L $4AFB0001
+
+000004 0000                     DC.W 0                  ; no sbasic funcs
+
+000006 000F                     DC.W 15                 ; init ptr (relative to start of rom)
+
+000008 0006                     DC.W 6
+00000A 514C454D5520             DC.B "QLEMU "
+
+                        ;;;  init starts here
+000010                          MT_ALRES #40            ; alloc 40 bytes
+                        	
+00001C                          END
+
+00000 Total Error(s)
+

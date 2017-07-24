@@ -3,6 +3,7 @@ package qdos
 import scala.concurrent.{ ExecutionContext, Future }
 
 import m68k.memory._
+import qdos.io._
 import m68k.cpu.MC68000
 import m68k.cpu.Cpu
 import m68k.{ Monitor, MonitorCallback };
@@ -25,7 +26,13 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
     case Some(prom) => new InputStreamAddressSpace(prom, 0xC000)
   }
   val ram  = new MemorySpace            (ramSize, 0x20000)
-  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1)
+
+  // attach behaviour to addresses within the IO block
+  val ioControl: Map[Int, IOControl] = Map(
+    0x18002 -> new IOControl with IOTransmit with IOReadNull
+  )
+
+  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, ioControl)
 
   private var breaks = Vector.empty[Int]
 
@@ -58,14 +65,19 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   val SYS_VAR_BASE = 0x28000
 
-  def sysVar(offset: Int, size: Int) =
+  def sysVar(offset: Int, size: Int): Int =
     size match {
       case 1 => cpu.readMemoryByte(SYS_VAR_BASE + offset)
       case 2 => cpu.readMemoryWord(SYS_VAR_BASE + offset)
       case _ => cpu.readMemoryLong(SYS_VAR_BASE + offset)
     }
 
-  def sysVar_CUR_KEY_QUEUE = sysVar(0x4c, 4)
+  def sysVar(s: String): Int = {
+    val (offset, size) = sysVarTbl(s)
+    sysVar(offset, size)
+  }
+
+  def sysVar_CUR_KEY_QUEUE = sysVar("SV_KEYQ")
 
   // sysvar names to offset + size
   val sysVarTbl = Map(
@@ -115,7 +127,8 @@ object QDOSMonitor {
     Logger.setCb(println _)
 
     val q = new QDOSMonitor(
-      romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom"))
+      romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom")),
+      promFile = Some(new FileInputStream("src/main/res/raw/qlemurom"))
     )
     q.getMonitor.setCB(
       new MonitorCallback {

@@ -1,4 +1,4 @@
-package m68k.memory
+package qdos.io
 
 /**
   *  This is a special Address Space that is used (in the real
@@ -6,10 +6,53 @@ package m68k.memory
   *  special behaviour
   */
 
+import m68k.memory.AddressSpace
+
 import IOAddressSpace._
 import smsqmulator.util.Logger.log
 
-class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends AddressSpace {
+
+object IOSize extends Enumeration {
+  val BYTE, LONG, WORD = Value
+}
+
+trait IOControlRead {
+  def read(addr: Int, size: IOSize.Value): Int
+}
+
+trait IOControlWrite {
+  def write(addr: Int, value: Int, size: IOSize.Value): Unit
+}
+
+trait IOControl extends IOControlRead with IOControlWrite
+
+trait IOWriteNull extends IOControlWrite {
+  def write(addr: Int, value: Int, size: IOSize.Value): Unit = ()
+}
+
+trait IOReadNull extends IOControlRead {
+  def read(addr: Int, size: IOSize.Value): Int = 0
+}
+
+trait IOTransmit extends IOControlWrite {
+
+  private var mode = 0
+  
+  private val MODE_MASK = 0x18
+
+  def write(addr: Int, value: Int, size: IOSize.Value): Unit = {
+    val s = (value & 0xFF).toBinaryString
+    mode = value & MODE_MASK
+    log(f"Transmit reg: writing ${s}B; mode set to 0x$mode%2x")
+  }
+}
+
+class IOAddressSpace(
+  val getStartAddress: Int,
+  val getEndAddress: Int,
+  controlMap: Map[Int, IOControl] = Map.empty
+) extends AddressSpace {
+
   private var PC_INTR = 0
 
   def setInterrupt(i: Int) = PC_INTR |= i
@@ -19,42 +62,37 @@ class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends A
 
   def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
 
-  def handleRead(addr: Int, size: Int): Int = {
-    //println(f"IOAddressSpace read [$size]: $addr%08x")
-    addr match {
-      case REG_PC_INTR =>
-        PC_INTR
-      case REG_IPC_READ =>
-        1
-      case _ =>
-        0
+  def handleRead(addr: Int, size: IOSize.Value): Int = {
+    (controlMap get addr) match {
+      case None => 0
+      case Some(handler) => handler.read(addr, size)
     }
   }
 
-  def handleWrite(addr: Int, size: Int, value: Int): Unit = {
-    println(f"IOAddressSpace write [$size]: $addr%08x => $value%08x/$value")
-    addr match {
-      case _ =>
+  def handleWrite(addr: Int, value: Int, size: IOSize.Value): Unit = {
+    (controlMap get addr) match {
+      case None => ()
+      case Some(handler) => handler.write(addr, value, size)
     }
   }
 
   def internalReadByte(addr: Int): Int =
-    handleRead(addr, 1)
+    handleRead(addr, IOSize.BYTE)
 
   def internalReadLong(addr: Int) =
-    handleRead(addr, 4)
+    handleRead(addr, IOSize.LONG)
 
   def internalReadWord(addr: Int) =
-    handleRead(addr, 2)
+    handleRead(addr, IOSize.WORD)
 
   def internalWriteByte(addr: Int, value: Int) =
-    handleWrite(addr, 1, value)
+    handleWrite(addr, value, IOSize.BYTE)
 
   def internalWriteWord(addr: Int, value: Int) =
-    handleWrite(addr, 2, value)
+    handleWrite(addr, value, IOSize.WORD)
 
   def internalWriteLong(addr: Int, value: Int) =
-    handleWrite(addr, 4, value)
+    handleWrite(addr, value, IOSize.LONG)
 
   def readByte(addr: Int) = internalReadByte(addr)
   def readLong(addr: Int) = internalReadLong(addr)
@@ -66,14 +104,4 @@ class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends A
 
   def reset = ()
 
-}
-
-
-object IOAddressSpace {
-  val REG_IPC_WRITE  = 0x18003
-  val REG_IPC_READ   = 0x18020
-  val REG_PC_INTR    = 0x18021
-
-
-  val INT_FINT = 2
 }

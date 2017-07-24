@@ -15,3 +15,5 @@ libraryDependencies ++=
   "com.android.support.test" % "runner" % "0.5" % "androidTest" ::
   "com.android.support.test.espresso" % "espresso-core" % "2.2.2" % "androidTest" ::
   Nil
+
+val root = (project in file(".")).settings(BuildRom.settings:_*)
