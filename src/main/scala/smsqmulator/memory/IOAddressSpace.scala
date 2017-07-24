@@ -7,6 +7,7 @@ package m68k.memory
   */
 
 import IOAddressSpace._
+import smsqmulator.util.Logger.log
 
 class IOAddressSpace(val getStartAddress: Int, val getEndAddress: Int) extends AddressSpace {
   private var PC_INTR = 0

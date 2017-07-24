@@ -11,6 +11,8 @@ import m68k.memory.syntax._
 
 import java.io.{ InputStream, FileInputStream }
 
+import smsqmulator.util.Logger
+
 class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None) {
   protected var running = false
 
@@ -109,13 +111,17 @@ object QDOSMonitor {
       (java.lang.Long.parseLong(value) & 0x0ffffffffL).toInt
 
   def main(args: Array[String]) = {
+
+    Logger.setCb(println _)
+
     val q = new QDOSMonitor(
       romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom"))
     )
     q.getMonitor.setCB(
       new MonitorCallback {
         def step(cpu: Cpu) = {
-          if(cpu.getPC == 0x4af6) { println("stuffing key"); q.enqueue(q.sysVar_CUR_KEY_QUEUE, 236) }
+          // XXXX DEBUG
+          if(cpu.getPC == 0x4af6) { println("stuffing key"); q.enqueue(0x29068, 236) }
         }
       }
     )
