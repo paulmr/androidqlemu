@@ -65,6 +65,11 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   def sysVar_CUR_KEY_QUEUE = sysVar(0x4c, 4)
 
+  // sysvar names to offset + size
+  val sysVarTbl = Map(
+    "SV_KEYQ" -> (0x4c, 4)
+  )
+
   def stop = running = false
 
   def step = time += cpu.execute
