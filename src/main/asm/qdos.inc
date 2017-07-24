@@ -8,7 +8,7 @@ MT_ALRES: MACRO byte_count
         QTRAP #$E, #1
         ENDM
 
-MT_LINK:        MACRO addr
+MT_LDD:        MACRO addr
         MOVEA.L addr, a0
-        QTRAP $22, #1
+        QTRAP #$22, #1
         ENDM
