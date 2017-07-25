@@ -18,7 +18,12 @@ object BuildRom {
       sourceDirectory.value / "main" / "asm"
     },
     asmSourceFile := sourceDirectory.value / "main" / "asm" / "qlemu.asm",
-    assemblerOutput := sourceDirectory.value / "main" / "res" / "raw" / "qlemurom",
+    assemblerOutput := {
+      val p = baseDirectory.value / "target" / "rom"
+      val f = p /  "qlemurom"
+      if(!p.exists()) p.mkdirs()
+      f
+    },
     assemblerListingsFile := {
       val p = baseDirectory.value / "target" / "asm"
       val f = p / "qlemurom.listing"

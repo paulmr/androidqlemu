@@ -1,6 +1,4 @@
-enablePlugins(AndroidApp)
-
-minSdkVersion := "19"
+minSdkVersion := "21"
 
 platformTarget := "android-23"
 

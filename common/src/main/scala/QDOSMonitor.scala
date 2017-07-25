@@ -15,7 +15,9 @@ import java.io.{ InputStream, FileInputStream }
 import smsqmulator.util.Logger
 
 import java.io.{ InputStream, OutputStream, PrintStream }
-import tcl.lang.{ StdChannel, Interp }
+import tcl.lang.Interp
+import tcl.lang.channel.StdChannel
+
 
 class QDOSMonitor(
   ramSize: Int = 128,
@@ -56,10 +58,10 @@ class QDOSMonitor(
   cpu.setAddressSpace(addrSpace)
   cpu.reset()
 
-  StdChannel.setIn(inputStream)
-  StdChannel.setOut(new PrintStream(outputStream))
-
-  protected lazy val jacl = new Interp()
+  protected lazy val jacl = {
+    val i = new Interp()
+    TclIo.unregisterChannel(i, StdChannel.STDOUT)
+    TclIo.registerChannel(i, StdChannel.STDOUT)
 
   def doCommand(s: String): Unit = {
     jacl.eval(s)
@@ -138,29 +140,4 @@ class QDOSMonitor(
   def shutdown(): Unit =
     jacl.dispose()
 
-}
-
-object QDOSMonitor {
-  def parseInt(value: String) =
-    if(value.startsWith("$"))
-      (java.lang.Long.parseLong(value.substring(1), 16) & 0x0ffffffffL).toInt
-    else
-      (java.lang.Long.parseLong(value) & 0x0ffffffffL).toInt
-
-  def main(args: Array[String]) = {
-
-    Logger.setCb(println _)
-
-    val q = new QDOSMonitor(
-      romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom")),
-      promFile = Some(new FileInputStream("src/main/res/raw/qlemurom"))
-    )
-
-    @annotation.tailrec
-    def cli: Unit = {
-      cli
-    }
-
-    q.shutdown()
-  }
 }
