@@ -1,4 +1,3 @@
-
 package smsqmulator.android
 
 import android.app.Application

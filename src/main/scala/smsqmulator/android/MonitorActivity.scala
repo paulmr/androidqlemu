@@ -56,13 +56,10 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
 
   override def onConfigurationChanged(cfg: Configuration) = update
 
-  def swapScreen =
+  def swapScreen() =
     startActivity(new Intent(this, classOf[ScreenActivity]))
 
   def update = {
-    val alpha = if(mon.isRunning) 0.5f else 1f
-    regText.setAlpha(alpha)
-    memText.setAlpha(alpha)
     updateRegisters
     updateMemoryDis(mon.cpu.getPC)
   }

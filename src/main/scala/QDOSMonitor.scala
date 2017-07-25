@@ -84,6 +84,11 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
     "SV_KEYQ" -> (0x4c, 4)
   )
 
+  def toggleRunState() = {
+    running = !running
+    isRunning
+  }
+
   def stop = running = false
 
   def step = time += cpu.execute
