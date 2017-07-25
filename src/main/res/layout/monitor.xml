@@ -45,13 +45,9 @@
         android:layout_margin="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:inputType="text|textNoSuggestions"
         android:text=""
         android:textAppearance="@android:style/TextAppearance.Large"/>
-    <Button
-        android:id="@+id/enterBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="OK"
-        android:onClick="enterButton" />
   </LinearLayout>
 </LinearLayout>

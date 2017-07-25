@@ -7,14 +7,18 @@ import scala.concurrent.duration.Duration
 import android.content.Intent
 import android.content.res.Configuration
 import android.widget.Toast
-import android.view.View
+import android.view.{ View, KeyEvent }
 import android.util.Log
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 
 import m68k.cpu.Cpu
 
+import android.widget.TextView
+
 class MonitorActivity extends AppCompatActivity with TypedFindView with QLActionBar {
+  import smsqmulator.util.Logger.log
+
   private val TAG = "QLMonitor"
 
   // allows accessing `.value` on TR.resource.constants
@@ -35,6 +39,13 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
     super.onCreate(savedInstanceState)
     // type ascription is required due to SCL-10491
     val monitorView = TypedViewHolder.setContentView(this, TR.layout.monitor)
+    memText.setMovementMethod(android.text.method.ScrollingMovementMethod.getInstance())
+    cmdInput.setOnEditorActionListener(new TextView.OnEditorActionListener {
+      override def onEditorAction(v: TextView, action: Int, key: KeyEvent) = {
+        enterButton()
+        true
+      }
+    })
     update
   }
 
@@ -184,7 +195,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
   def toastMsg(msg: String, duration: Int = Toast.LENGTH_SHORT) =
     Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
 
-  def enterButton(v: View): Unit = {
+  def enterButton(): Unit = {
     /* we should run the command contained in the command input text field */
     val cmd = cmdInput.getText().toString().split(" ")
     cmd.headOption match {
