@@ -17,11 +17,7 @@ import smsqmulator.util.Logger
 import java.io.{ InputStream, OutputStream, PrintStream }
 import tcl.lang.{ StdChannel, Interp }
 
-class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None) {
-
-  val inputStream: InputStream   = System.in
-  val outputStream: OutputStream = System.out
-
+class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None, inputStream: InputStream = System.in, outputStream: OutputStream = System.out) {
   protected var running = false
 
   def isRunning = running
