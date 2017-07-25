@@ -10,7 +10,9 @@ import m68k.{ Monitor, MonitorCallback };
 
 import m68k.memory.syntax._
 
-import java.io.InputStream
+import java.io.{ InputStream, FileInputStream }
+
+import smsqmulator.util.Logger
 
 import java.io.{ InputStream, OutputStream, PrintStream }
 import tcl.lang.{ StdChannel, Interp }
@@ -136,4 +138,29 @@ class QDOSMonitor(
   def shutdown(): Unit =
     jacl.dispose()
 
+}
+
+object QDOSMonitor {
+  def parseInt(value: String) =
+    if(value.startsWith("$"))
+      (java.lang.Long.parseLong(value.substring(1), 16) & 0x0ffffffffL).toInt
+    else
+      (java.lang.Long.parseLong(value) & 0x0ffffffffL).toInt
+
+  def main(args: Array[String]) = {
+
+    Logger.setCb(println _)
+
+    val q = new QDOSMonitor(
+      romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom")),
+      promFile = Some(new FileInputStream("src/main/res/raw/qlemurom"))
+    )
+
+    @annotation.tailrec
+    def cli: Unit = {
+      cli
+    }
+
+    q.shutdown()
+  }
 }
