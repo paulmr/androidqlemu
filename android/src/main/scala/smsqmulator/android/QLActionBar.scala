@@ -2,6 +2,8 @@ package smsqmulator.android
 
 import android.view.{ Menu, MenuItem }
 
+import smsqmulator.util.Logger.log
+
 trait QLActionBar extends android.app.Activity with TypedFindView {
   def mon: qdos.QDOSMonitor
 
@@ -10,10 +12,10 @@ trait QLActionBar extends android.app.Activity with TypedFindView {
   def toggleRunState(): Boolean =
     mon.toggleRunState() // returns new state
 
-  lazy val runStateButton = findViewById(R.id.runState)
-
   lazy val runningIcon = TR.drawable.play_icon
   lazy val pausedIcon = TR.drawable.pause_icon
+
+  def updateRunStateButton() = ()
 
   override def onCreateOptionsMenu(menu: Menu) = {
     getMenuInflater.inflate(TR.menu.action.resid, menu)
@@ -27,8 +29,7 @@ trait QLActionBar extends android.app.Activity with TypedFindView {
         true
       case R.id.runState =>
         toggleRunState()
-        val icon = if(mon.isRunning) runningIcon else pausedIcon
-        item.setIcon(icon.resid)
+        updateRunStateButton()
         true
       case _ => false
     }

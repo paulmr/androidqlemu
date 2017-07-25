@@ -15,9 +15,6 @@ import java.io.{ InputStream, FileInputStream }
 import smsqmulator.util.Logger.log
 
 import java.io.{ InputStream, OutputStream, PrintStream }
-import tcl.lang.Interp
-import tcl.lang.channel.StdChannel
-
 
 class QDOSMonitor(
   ramSize: Int = 128,
@@ -52,22 +49,13 @@ class QDOSMonitor(
 
   val addrSpace = rom ~> prom ~> io ~> ram
 
-  println(f"Memory: ${addrSpace.getStartAddress}%08x => ${addrSpace.getEndAddress}%08x")
+  log(f"Memory: ${addrSpace.getStartAddress}%08x => ${addrSpace.getEndAddress}%08x")
 
   val cpu = new MC68000()
   cpu.setAddressSpace(addrSpace)
   cpu.reset()
 
-  protected lazy val jacl = {
-    val i = new Interp()
-    TclIo.unregisterChannel(i, StdChannel.STDOUT)
-    TclIo.registerChannel(i, StdChannel.STDOUT)
-
-  def doCommand(s: String): Unit = try {
-    jacl.eval(s)
-  } catch {
-    case e: tcl.lang.TclException => log(s"TCL exception: ${e.toString}")
-  }
+  def doCommand(s: String): Unit = log("UNIMPLEMENTED")
 
   /* this behaves the same as the QDOS trap IO.QIN and allows us to
    * insert data into the queues, e.g. the keyboard queue. */
@@ -139,7 +127,6 @@ class QDOSMonitor(
   def clearBreaks =
     breaks = Vector.empty[Int]
 
-  def shutdown(): Unit =
-    jacl.dispose()
+  def shutdown(): Unit = ()
 
 }

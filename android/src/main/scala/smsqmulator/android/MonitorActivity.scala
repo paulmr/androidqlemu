@@ -62,6 +62,7 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
   def update = {
     updateRegisters
     updateMemoryDis(mon.cpu.getPC)
+    updateRunStateButton()
   }
 
   def writeError(s: String) = Log.e(TAG, s)

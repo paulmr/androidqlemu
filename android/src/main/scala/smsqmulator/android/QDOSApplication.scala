@@ -14,19 +14,19 @@ class QDOSApplication extends Application {
     Log.d(TAG, s)
   }
 
-  lazy val promFile: Option[InputStream] = {
-    try {
-      val fname = new File(getExternalFilesDir(null), "qlemu.rom")
-      val res = Some(new FileInputStream(fname))
-      Logger.log(s"using local rom ${fname.toString}")
-      res
-    } catch {
-      case e: IOException =>
-        Logger.log(s"local qlemu.rom not found, using packaged (${e.toString})")
-        Some(getResources.openRawResource(TR.raw.qlemurom.resid))
-    }
-  }
+  // lazy val promFile: Option[InputStream] = {
+  //   try {
+  //     val fname = new File(getExternalFilesDir(null), "qlemu.rom")
+  //     val res = Some(new FileInputStream(fname))
+  //     Logger.log(s"using local rom ${fname.toString}")
+  //     res
+  //   } catch {
+  //     case e: IOException =>
+  //       Logger.log(s"local qlemu.rom not found, using packaged (${e.toString})")
+  //       Some(getResources.openRawResource(TR.raw.qlemurom.resid))
+  //   }
+  // }
 
   lazy val qdosMonitor =
-    new qdos.QDOSMonitor(romFile = getResources.openRawResource(TR.raw.rom.resid), promFile = promFile)
+    new qdos.QDOSMonitor(romFile = getResources.openRawResource(TR.raw.rom.resid))
 }
