@@ -12,7 +12,7 @@ import m68k.memory.syntax._
 
 import java.io.{ InputStream, FileInputStream }
 
-import smsqmulator.util.Logger
+import smsqmulator.util.Logger.log
 
 import java.io.{ InputStream, OutputStream, PrintStream }
 import tcl.lang.Interp
@@ -63,8 +63,10 @@ class QDOSMonitor(
     TclIo.unregisterChannel(i, StdChannel.STDOUT)
     TclIo.registerChannel(i, StdChannel.STDOUT)
 
-  def doCommand(s: String): Unit = {
+  def doCommand(s: String): Unit = try {
     jacl.eval(s)
+  } catch {
+    case e: tcl.lang.TclException => log(s"TCL exception: ${e.toString}")
   }
 
   /* this behaves the same as the QDOS trap IO.QIN and allows us to
