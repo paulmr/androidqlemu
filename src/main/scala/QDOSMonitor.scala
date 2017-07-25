@@ -14,7 +14,14 @@ import java.io.{ InputStream, FileInputStream }
 
 import smsqmulator.util.Logger
 
+import java.io.{ InputStream, OutputStream, PrintStream }
+import tcl.lang.{ StdChannel, Interp }
+
 class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[InputStream] = None) {
+
+  val inputStream: InputStream   = System.in
+  val outputStream: OutputStream = System.out
+
   protected var running = false
 
   def isRunning = running
@@ -47,7 +54,12 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
   cpu.setAddressSpace(addrSpace)
   cpu.reset()
 
-  lazy val getMonitor = new Monitor(cpu, addrSpace)
+
+  StdChannel.setIn(inputStream)
+  StdChannel.setOut(new PrintStream(outputStream))
+
+  protected lazy val jacl = new Interp()
+  jacl.eval("puts {Hello world (jacl)!}")
 
   /* this behaves the same as the QDOS trap IO.QIN and allows us to
    * insert data into the queues, e.g. the keyboard queue. */
@@ -118,6 +130,10 @@ class QDOSMonitor(ramSize: Int = 128, romFile: InputStream, promFile: Option[Inp
 
   def clearBreaks =
     breaks = Vector.empty[Int]
+
+  def shutdown(): Unit =
+    jacl.dispose()
+
 }
 
 object QDOSMonitor {
@@ -135,14 +151,6 @@ object QDOSMonitor {
       romFile = new FileInputStream(args.headOption.getOrElse("rom/js.rom")),
       promFile = Some(new FileInputStream("src/main/res/raw/qlemurom"))
     )
-    q.getMonitor.setCB(
-      new MonitorCallback {
-        def step(cpu: Cpu) = {
-          // XXXX DEBUG
-          if(cpu.getPC == 0x4af6) { println("stuffing key"); q.enqueue(0x29068, 236) }
-        }
-      }
-    )
-    q.getMonitor.run()
+    q.shutdown()
   }
 }
