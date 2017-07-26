@@ -3,12 +3,6 @@
   xmlns:tools="http://schemas.android.com/tools"
   tools:context="MonitorActivity">
   <item
-    android:id="@+id/runState"
-    android:orderInCategory="100"
-    android:title="Run State"
-    android:icon="@drawable/pause_icon"
-    app:showAsAction="always" />
-  <item
     android:id="@+id/showScreen"
     android:orderInCategory="100"
     android:title="Show Screen"

@@ -16,8 +16,9 @@ import m68k.cpu.Cpu
 
 import android.widget.TextView
 
-class MonitorActivity extends AppCompatActivity with TypedFindView with QLActionBar {
   import smsqmulator.util.Logger.log
+
+class MonitorActivity extends AppCompatActivity with TypedFindView with QLActionBar {
 
   private val TAG = "QLMonitor"
 
@@ -60,9 +61,11 @@ class MonitorActivity extends AppCompatActivity with TypedFindView with QLAction
     startActivity(new Intent(this, classOf[ScreenActivity]))
 
   def update = {
+    val alpha = if(mon.isRunning) 0.5f else 1f
+    regText.setAlpha(alpha)
+    memText.setAlpha(alpha)
     updateRegisters
     updateMemoryDis(mon.cpu.getPC)
-    updateRunStateButton()
   }
 
   def writeError(s: String) = Log.e(TAG, s)

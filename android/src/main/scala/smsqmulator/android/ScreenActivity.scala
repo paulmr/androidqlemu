@@ -9,6 +9,8 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 
+import smsqmulator.util.Logger.log
+
 import qdos.QLKeyhandler
 
 class ScreenActivity extends AppCompatActivity

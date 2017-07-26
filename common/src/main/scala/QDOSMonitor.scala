@@ -104,8 +104,10 @@ class QDOSMonitor(
   def execute(implicit ec: ExecutionContext) = {
     running = true
     Future {
+      log("Running ...")
       while(isRunning && !hasBreak(cpu.getPC)) step
       running = false // needed if stopped by break
+      log("Not running")
     }
   }
 
