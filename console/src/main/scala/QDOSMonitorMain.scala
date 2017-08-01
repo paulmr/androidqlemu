@@ -32,24 +32,4 @@ object QDOSMonitorMain {
     new m68k.Monitor(q.cpu, q.addrSpace).run()
 
   }
-
-  //   val cons = org.jline.reader.LineReaderBuilder.builder().build()
-
-  //   @annotation.tailrec
-  //   def cli(): Unit = {
-  //     val s = try {
-  //       cons.readLine("mon> ")
-  //     } catch {
-  //       case _: org.jline.reader.EndOfFileException => "quit"
-  //     }
-
-  //     if(s != "quit") {
-  //       q.doCommand(s)
-  //       cli()
-  //     }
-  //   }
-
-  //   cli()
-  //   q.shutdown()
-  // }
 }

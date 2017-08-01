@@ -41,6 +41,18 @@ class QDOSMonitor(
 
   val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this)
 
+  private var tickerC = 0
+  lazy val ticker = {
+    val t = smsqmulator.util.Ticker.fiftyHz { () =>
+      tickerC += 1
+      if(tickerC % 100 == 0) log(s"[PMR 1658] Ticker $tickerC")
+      io.addInterrupt(0x8)
+      cpu.raiseInterrupt(2)
+    }
+    t.start()
+    t
+  }
+
   private var breaks = Vector.empty[Int]
 
   private var time = 0
@@ -50,7 +62,7 @@ class QDOSMonitor(
 
   log(f"Memory: ${addrSpace.getStartAddress}%08x => ${addrSpace.getEndAddress}%08x")
 
-  val cpu = new MC68000()
+  lazy val cpu = new MC68000()
   cpu.setAddressSpace(addrSpace)
   cpu.reset()
 
@@ -102,11 +114,13 @@ class QDOSMonitor(
 
   def execute(implicit ec: ExecutionContext) = {
     running = true
+    ticker.unpause
     Future {
       log("Running ...")
       while(isRunning && !hasBreak(cpu.getPC)) step
       running = false // needed if stopped by break
       log("Not running")
+      ticker.pause
     }
   }
 

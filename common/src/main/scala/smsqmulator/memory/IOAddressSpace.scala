@@ -23,6 +23,8 @@ class IOAddressSpace(
 
   private var PC_INTR = 0
 
+  def addInterrupt(i: Int) = PC_INTR |= i
+
   def size = getEndAddress - getStartAddress
 
   def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
