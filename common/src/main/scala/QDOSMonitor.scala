@@ -49,7 +49,7 @@ class QDOSMonitor(
       io.addInterrupt(0x8)
       cpu.raiseInterrupt(2)
     }
-    t.start()
+    //t.start()
     t
   }
 
