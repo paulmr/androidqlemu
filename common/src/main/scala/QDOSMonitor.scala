@@ -114,7 +114,7 @@ class QDOSMonitor(
 
   def execute(implicit ec: ExecutionContext) = {
     running = true
-    ticker.unpause
+    // ticker.unpause
     Future {
       log("Running ...")
       while(isRunning && !hasBreak(cpu.getPC)) step
