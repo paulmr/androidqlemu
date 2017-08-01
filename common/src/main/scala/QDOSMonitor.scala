@@ -29,18 +29,17 @@ class QDOSMonitor(
 
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
-  val prom = promFile match {
-    case None => new NullAddressSpace       (0xC000,  0x10000 - 1)
-    case Some(prom) => new InputStreamAddressSpace(prom, 0xC000)
+  val prom = (promFile orElse Option(getClass.getResourceAsStream("/rom/qlemurom"))) match {
+    case None =>
+      log("No prom")
+      new NullAddressSpace       (0xC000,  0x10000 - 1)
+    case Some(prom) =>
+      log("Loading prom")
+      new InputStreamAddressSpace(prom, 0xC000)
   }
   val ram  = new MemorySpace            (ramSize, 0x20000)
 
-  // attach behaviour to addresses within the IO block
-  val ioControl: Map[Int, IOControl] = Map(
-    0x18002 -> new IOControl with IOTransmit with IOReadNull
-  )
-
-  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, ioControl)
+  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this)
 
   private var breaks = Vector.empty[Int]
 

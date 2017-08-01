@@ -11,7 +11,7 @@ object BuildRom {
   val asmSourceFile = Def.settingKey[File]("file to assemble")
   val assemblerOutput = Def.settingKey[File]("where should the files go")
   val assemblerListingsFile = Def.settingKey[File]("listings file")
-  val assembleFiles = Def.taskKey[Unit]("assemble the files")
+  val assembleFiles = Def.taskKey[Seq[File]]("assemble the files")
 
   val settings = Seq(
     asmSourceDirectory := {
@@ -19,13 +19,13 @@ object BuildRom {
     },
     asmSourceFile := sourceDirectory.value / "main" / "asm" / "qlemu.asm",
     assemblerOutput := {
-      val p = baseDirectory.value / "target" / "rom"
+      val p = (baseDirectory in Compile).value / "target" / "rom"
       val f = p /  "qlemurom"
       if(!p.exists()) p.mkdirs()
       f
     },
     assemblerListingsFile := {
-      val p = baseDirectory.value / "target" / "asm"
+      val p = baseDirectory.value / "target"
       val f = p / "qlemurom.listing"
       if(!p.exists()) p.mkdirs()
       f
@@ -41,7 +41,14 @@ object BuildRom {
           ),
           asmSourceDirectory.value
         ).!
-        if(res != 0) sys.error("Assembler failed")
+        if(res == 0) {
+          Seq(assemblerOutput.value)
+        } else {
+          sys.error("Assembler failed")
+          Nil
+        }
+      } else {
+        Seq(assemblerOutput.value)
       }
     },
     compile in Compile := ((compile in Compile) dependsOn assembleFiles).value

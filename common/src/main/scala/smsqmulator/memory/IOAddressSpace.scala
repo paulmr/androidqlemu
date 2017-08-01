@@ -8,7 +8,6 @@ package qdos.io
 
 import m68k.memory.AddressSpace
 
-import IOAddressSpace._
 import smsqmulator.util.Logger.log
 
 
@@ -16,64 +15,28 @@ object IOSize extends Enumeration {
   val BYTE, LONG, WORD = Value
 }
 
-trait IOControlRead {
-  def read(addr: Int, size: IOSize.Value): Int
-}
-
-trait IOControlWrite {
-  def write(addr: Int, value: Int, size: IOSize.Value): Unit
-}
-
-trait IOControl extends IOControlRead with IOControlWrite
-
-trait IOWriteNull extends IOControlWrite {
-  def write(addr: Int, value: Int, size: IOSize.Value): Unit = ()
-}
-
-trait IOReadNull extends IOControlRead {
-  def read(addr: Int, size: IOSize.Value): Int = 0
-}
-
-trait IOTransmit extends IOControlWrite {
-
-  private var mode = 0
-  
-  private val MODE_MASK = 0x18
-
-  def write(addr: Int, value: Int, size: IOSize.Value): Unit = {
-    val s = (value & 0xFF).toBinaryString
-    mode = value & MODE_MASK
-    log(f"Transmit reg: writing ${s}B; mode set to 0x$mode%2x")
-  }
-}
-
 class IOAddressSpace(
   val getStartAddress: Int,
   val getEndAddress: Int,
-  controlMap: Map[Int, IOControl] = Map.empty
+  mon: qdos.QDOSMonitor
 ) extends AddressSpace {
 
   private var PC_INTR = 0
-
-  def setInterrupt(i: Int) = PC_INTR |= i
-  def clearInterrupt = PC_INTR = 0
 
   def size = getEndAddress - getStartAddress
 
   def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
 
-  def handleRead(addr: Int, size: IOSize.Value): Int = {
-    (controlMap get addr) match {
-      case None => 0
-      case Some(handler) => handler.read(addr, size)
-    }
+  def handleRead(addr: Int, size: IOSize.Value): Int = addr match {
+    case 0x18021 => PC_INTR
+    case _ => 0
   }
 
-  def handleWrite(addr: Int, value: Int, size: IOSize.Value): Unit = {
-    (controlMap get addr) match {
-      case None => ()
-      case Some(handler) => handler.write(addr, value, size)
-    }
+  def handleWrite(addr: Int, value: Int, size: IOSize.Value): Unit = addr match {
+    case 0x18021 =>
+      PC_INTR = (value & 0xFF)
+      log(f"[pc=${mon.cpu.getPC()}%08x] PC_INTR/$size set to: ${value.toBinaryString}")
+    case _ => ()
   }
 
   def internalReadByte(addr: Int): Int =
