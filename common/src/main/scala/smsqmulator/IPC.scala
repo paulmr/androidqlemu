@@ -3,7 +3,19 @@ package qdos
 import smsqmulator.util.Logger.log
 
 /**
-  * this is copied (and translated into scala) from qlay's qlio.c
+  * the logic here has been stolen from qlay's qlio.c (and translated
+  * into scala). The copyright notice for QLAY is:
+  *
+  * "1. Copyrights
+  * This program is freeware. You may do with it whatever you want for
+  * personal use. Copyright Jan Venema.
+  *
+  * Permission is granted to redistribute this program free of charge,
+  * provided it is distributed in the full archive with unmodified contents.
+  * No profit beyond the price of the media on which it is distributed is
+  * made."
+  *
+  *  Big thanks to Jan Venema.
   */
 
 class IPC {
@@ -71,4 +83,3 @@ class IPC {
   }
 
 }
-
