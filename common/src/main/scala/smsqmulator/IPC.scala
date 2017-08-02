@@ -21,7 +21,7 @@ import smsqmulator.util.Logger.log
   * work out how the very complicated IPC protocol works.
   */
 
-class IPC {
+class IPC(mon: QDOSMonitor) {
 
   private var IPCrcvd = 1	/* bit marker */
   private var IPCcmd = 0
@@ -32,21 +32,37 @@ class IPC {
   private var IPC020 = 0
   private var IPCreturn = 0
 
-  var keyBuffer = List(0x3b | 0x1000) // 1 key
+  def makeKey(col: Int, row: Int) = (col << 3) | row
+
+
+  var keyBufferHead = 0
+  val keyBuffer = Array.fill(0)(0)
+
+  def addKey(k: Int) = {
+    if(keyBufferHead < keyBuffer.size) {
+      keyBuffer(keyBufferHead) = k
+      keyBufferHead += 1
+    }
+  }
 
   private def exec_IPCcmd(cmd: Int) = {
-    log(s"exec_IPCcmd: $cmd")
     cmd match {
       case 1 =>
-        IPCreturn = 0 | (if(keyBuffer.length > 0) 0x01 else 0)
+        IPCreturn = 0 | (if(keyBufferHead > 0) 0x01 else 0)
         IPCcnt = 8
       case 8 => // get key
-        IPCreturn = keyBuffer.head
-        IPCcnt = 16
+        if(keyBufferHead > 0) {
+          keyBufferHead = 0
+          IPCreturn = keyBuffer(0) | 0x1000
+          IPCcnt = 16
+        } else {
+          IPCreturn = 0
+        }
       case _ =>
         IPCreturn = 0
         IPCcnt = 0
     }
+    log(f"exec_IPCcmd: $cmd (ipcreturn: $IPCreturn%x)")
   }
 
   def send(data: Int): Unit = {

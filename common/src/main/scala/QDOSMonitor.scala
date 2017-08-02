@@ -35,14 +35,21 @@ class QDOSMonitor(
 
   val ram  = new MemorySpace            (ramSize, 0x20000)
 
-  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this)
+  val ipc = new IPC(this)
+  val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this, ipc)
+
+  def addKey(k: Int) = {
+    ipc.addKey(k)
+    io.addInterrupt(2)
+    cpu.raiseInterrupt(2)
+  }
 
   private var tickerC = 0
   lazy val ticker = {
     val t = smsqmulator.util.Ticker.fiftyHz { () =>
       tickerC += 1
       if(tickerC % 100 == 0) log(s"[PMR 1658] Ticker $tickerC")
-      io.addInterrupt(0x8)
+      io.addInterrupt(2)
       cpu.raiseInterrupt(2)
     }
     //t.start()

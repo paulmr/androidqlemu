@@ -17,14 +17,13 @@ import qdos.IPC
 class IOAddressSpace(
   val getStartAddress: Int,
   val getEndAddress: Int,
-  mon: qdos.QDOSMonitor
+  mon: qdos.QDOSMonitor,
+  ipc: qdos.IPC
 ) extends AddressSpace {
 
   private var PC_INTR = 0
 
-  private val ipc = new IPC
-
-  def addInterrupt(i: Int) = PC_INTR |= i
+  def addInterrupt(i: Int) = PC_INTR = i
 
   def size = getEndAddress - getStartAddress
 
