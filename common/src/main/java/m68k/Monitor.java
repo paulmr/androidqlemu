@@ -196,6 +196,12 @@ public class Monitor implements Runnable
 			{
 				handleGo(tokens);
 			}
+                        else if(cmd.equals("u")) {
+                                handleUntil(tokens);
+                        }
+                        else if(cmd.equals("j")) {
+                                handleJump();
+                        }
 			else if(cmd.equals("autoregs"))
 			{
 				handleAutoRegs(tokens);
@@ -208,6 +214,9 @@ public class Monitor implements Runnable
 			{
 				handleLoad(tokens);
 			}
+                        else if(cmd.equals("script")) {
+                                handleScript(tokens);
+                        }
 			else if(cmd.startsWith("d"))
 			{
 				handleDataRegs(tokens);
@@ -231,6 +240,23 @@ public class Monitor implements Runnable
 		}
 	}
 
+        protected void handleScript(String[] tokens) {
+                if(tokens.length > 1) {
+                        try {
+                                BufferedReader in = new BufferedReader(new FileReader(tokens[1]));
+                                String line = in.readLine();
+                                while(line != null) {
+                                        handleCommand(line);
+                                        line = in.readLine();
+                                }
+                        } catch(IOException e) {
+                                writer.println("Error: " + e.toString());
+                                return;
+                        }
+                }
+        }
+                                
+
 	protected void handleGo(String[] tokens)
 	{
 		int count = 0;
@@ -243,7 +269,6 @@ public class Monitor implements Runnable
 				int time = cpu.execute();
 				count += time;
 				int addr = cpu.getPC();
-                                if(cb != null) cb.step(cpu);
 				if(breakpoints.contains(addr))
 				{
 					//time to stop
@@ -287,6 +312,36 @@ public class Monitor implements Runnable
 			writer.println(String.format("$%x", bp));
 		}
 	}
+
+        protected void handleUntil(String[] tokens)
+        {
+                int stopAt;
+
+                if(tokens.length > 1) {
+                        try {
+                                stopAt = parseInt(tokens[1]);
+                        } catch (NumberFormatException e) {
+                                writer.println("bad addr: " + e);
+                                return;
+                        }
+                        writer.println("Stopping at: " + String.format("$%x", stopAt));
+                        boolean going = true;
+                        while(going) {
+                                cpu.execute();
+                                if(cpu.getPC() == stopAt) {
+                                        going = false;
+                                }
+                        }
+                }
+        }
+
+        protected void handleJump() {
+                cpu.execute();
+                String addr = String.format("$%x", cpu.readMemoryLong(cpu.getAddrRegisterLong(7)));
+                String tokens[] = { "u", addr };
+                writer.println("return address is: " + addr);
+                handleUntil(tokens);
+        }
 
 	protected void handleAutoRegs(String[] tokens)
 	{
