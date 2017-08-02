@@ -1,0 +1,53 @@
+package qdos
+
+/**
+  * This pretends to be a PROM (e.g. loaded at $C000) and is used to
+  * trigger special behaviour to make the emulator work.
+  */
+
+import smsqmulator.util.Logger.log
+
+import m68k.memory.ByteBufferAddressSpace
+import java.nio.ByteBuffer
+
+class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promSize: Int = 16 * 1024)
+    extends ByteBufferAddressSpace {
+
+  private val bytes: Array[Byte] = Array.fill(promSize)(0.toByte)
+
+  this.size = bytes.size
+  this.buffer = ByteBuffer.wrap(bytes)
+
+  this.startAddr = initStartAddr
+
+  private val initOffset = 0xBE // init func (magic addr)
+  private val initAddr   = initStartAddr + 0xBE // relative to start of prom
+
+  def init() = {
+    val addr = startAddr
+    writeLong(addr, 0x4AFB0001) // magic prom identifier
+    writeWord(addr + 4, 0)      // no sbasic funcs
+    writeWord(addr + 6, initOffset)
+
+    // prom name
+    writeWord(addr + 8, 1)
+    writeByte(addr + 10, 65)
+
+    this
+  }
+
+  lazy val initDone = {
+    log("Custom prom init triggered")
+    true
+  }
+
+  override def readWord(addr: Int) = {
+    addr match {
+      case `initAddr` =>
+        initDone // trigger init
+        0x4e75 // RTS
+      case _ => super.readWord(addr)
+    }
+  }
+
+}

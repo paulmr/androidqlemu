@@ -29,14 +29,9 @@ class QDOSMonitor(
 
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
-  val prom = (promFile orElse Option(getClass.getResourceAsStream("/rom/qlemurom"))) match {
-    case None =>
-      log("No prom")
-      new NullAddressSpace       (0xC000,  0x10000 - 1)
-    case Some(prom) =>
-      log("Loading prom")
-      new InputStreamAddressSpace(prom, 0xC000)
-  }
+
+  val prom = new PromAddressSpace(this, 0xC000).init()
+
   val ram  = new MemorySpace            (ramSize, 0x20000)
 
   val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this)
