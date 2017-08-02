@@ -10,7 +10,7 @@ trait QLKeyhandler {
   // returns false if it can't handle this key
   def doKey(key: KeyT): Boolean =
     if(keymap.isDefinedAt(key)) {
-        mon.enqueue(mon.sysVar_CUR_KEY_QUEUE, keymap(key))
+        mon.enqueue(mon.sysVar(QDOSMonitor.SV.KEYQ), keymap(key))
         true
     } else false
 }

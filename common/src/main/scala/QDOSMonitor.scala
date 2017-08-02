@@ -29,14 +29,10 @@ class QDOSMonitor(
 
   // http://www.dilwyn.me.uk/docs/ebooks/olqlug/QL%20Manual%20-%20Concepts.htm#memorymap
   val rom  = new InputStreamAddressSpace(romFile, 0)
-  val prom = (promFile orElse Option(getClass.getResourceAsStream("/rom/qlemurom"))) match {
-    case None =>
-      log("No prom")
-      new NullAddressSpace       (0xC000,  0x10000 - 1)
-    case Some(prom) =>
-      log("Loading prom")
-      new InputStreamAddressSpace(prom, 0xC000)
-  }
+
+  val prom = promFile.map(in => new InputStreamAddressSpace(in, 0xC000))
+    .getOrElse(new PromAddressSpace(this, 0xC000, "QLEMU010").init())
+
   val ram  = new MemorySpace            (ramSize, 0x20000)
 
   val io   = new IOAddressSpace         (0x10000, 0x20000 - 1, this)
@@ -49,7 +45,7 @@ class QDOSMonitor(
       io.addInterrupt(0x8)
       cpu.raiseInterrupt(2)
     }
-    t.start()
+    //t.start()
     t
   }
 
@@ -82,26 +78,27 @@ class QDOSMonitor(
     }
   }
 
-  val SYS_VAR_BASE = 0x28000
-
-  def sysVar(offset: Int, size: Int): Int =
-    size match {
-      case 1 => cpu.readMemoryByte(SYS_VAR_BASE + offset)
-      case 2 => cpu.readMemoryWord(SYS_VAR_BASE + offset)
-      case _ => cpu.readMemoryLong(SYS_VAR_BASE + offset)
+  def sysVar(offset: Int, size: MemSize.Value): Int = {
+    val op = size match {
+      case MemSize.BYTE => cpu.readMemoryByte _
+      case MemSize.WORD => cpu.readMemoryWord _
+      case MemSize.LONG => cpu.readMemoryLong _
     }
-
-  def sysVar(s: String): Int = {
-    val (offset, size) = sysVarTbl(s)
-    sysVar(offset, size)
+    op(QDOSMonitor.SYS_VAR_BASE + offset)
   }
 
-  def sysVar_CUR_KEY_QUEUE = sysVar("SV_KEYQ")
+  def sysVar(sv: QDOSMonitor.SysVar): Int = {
+    sysVar(sv.offset, sv.size)
+  }
 
-  // sysvar names to offset + size
-  val sysVarTbl = Map(
-    "SV_KEYQ" -> (0x4c, 4)
-  )
+  def setSysVar(sysVar: QDOSMonitor.SysVar, value: Int): Unit = {
+    val op = sysVar.size match {
+      case MemSize.BYTE => cpu.writeMemoryByte _
+      case MemSize.WORD => cpu.writeMemoryWord _
+      case MemSize.LONG => cpu.writeMemoryLong _
+    }
+    op(QDOSMonitor.SYS_VAR_BASE + sysVar.offset, value)
+  }
 
   def toggleRunState() = {
     running = !running
@@ -144,4 +141,25 @@ class QDOSMonitor(
 
   def shutdown(): Unit = ()
 
+}
+
+object QDOSMonitor {
+  import qdos.MemSize
+
+  val SYS_VAR_BASE = 0x28000
+
+  sealed trait SysVar {
+    def offset: Int
+    def size: MemSize.Value
+  }
+  object SV {
+    case object DDLST extends SysVar {
+      val offset = 0x48
+      val size = MemSize.LONG
+    }
+    case object KEYQ extends SysVar {
+      val offset = 0x4c
+      val size = MemSize.LONG
+    }
+  }
 }

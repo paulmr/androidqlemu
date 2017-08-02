@@ -8,12 +8,9 @@ package qdos.io
 
 import m68k.memory.AddressSpace
 
+import qdos.MemSize
+
 import smsqmulator.util.Logger.log
-
-
-object IOSize extends Enumeration {
-  val BYTE, LONG, WORD = Value
-}
 
 class IOAddressSpace(
   val getStartAddress: Int,
@@ -29,12 +26,12 @@ class IOAddressSpace(
 
   def isValid(addr: Int) = (addr >= getStartAddress) && (addr <= getEndAddress)
 
-  def handleRead(addr: Int, size: IOSize.Value): Int = addr match {
+  def handleRead(addr: Int, size: MemSize.Value): Int = addr match {
     case 0x18021 => PC_INTR
     case _ => 0
   }
 
-  def handleWrite(addr: Int, value: Int, size: IOSize.Value): Unit = addr match {
+  def handleWrite(addr: Int, value: Int, size: MemSize.Value): Unit = addr match {
     case 0x18021 =>
       PC_INTR = (value & 0xFF)
       log(f"[pc=${mon.cpu.getPC()}%08x] PC_INTR/$size set to: ${value.toBinaryString}")
@@ -42,22 +39,22 @@ class IOAddressSpace(
   }
 
   def internalReadByte(addr: Int): Int =
-    handleRead(addr, IOSize.BYTE)
+    handleRead(addr, MemSize.BYTE)
 
   def internalReadLong(addr: Int) =
-    handleRead(addr, IOSize.LONG)
+    handleRead(addr, MemSize.LONG)
 
   def internalReadWord(addr: Int) =
-    handleRead(addr, IOSize.WORD)
+    handleRead(addr, MemSize.WORD)
 
   def internalWriteByte(addr: Int, value: Int) =
-    handleWrite(addr, value, IOSize.BYTE)
+    handleWrite(addr, value, MemSize.BYTE)
 
   def internalWriteWord(addr: Int, value: Int) =
-    handleWrite(addr, value, IOSize.WORD)
+    handleWrite(addr, value, MemSize.WORD)
 
   def internalWriteLong(addr: Int, value: Int) =
-    handleWrite(addr, value, IOSize.LONG)
+    handleWrite(addr, value, MemSize.LONG)
 
   def readByte(addr: Int) = internalReadByte(addr)
   def readLong(addr: Int) = internalReadLong(addr)

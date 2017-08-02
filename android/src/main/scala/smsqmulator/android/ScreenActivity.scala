@@ -36,7 +36,10 @@ class ScreenActivity extends AppCompatActivity
     KeyEvent.KEYCODE_A -> QLKeyhandler.KEY_A
   )
 
-  override def onKeyDown(key: Int, keyev: KeyEvent) = doKey(key)
+  override def onKeyDown(key: Int, keyev: KeyEvent) = {
+    log(s"KEY pressed: $key = ${keymap.get(key)}")
+    doKey(key)
+  }
 
   override def onCreate(savedInstanceState: Bundle): Unit = {
     super.onCreate(savedInstanceState)

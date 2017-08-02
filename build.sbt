@@ -2,8 +2,9 @@ scalaVersion in ThisBuild := "2.11.8"
 
 val common = (project in file("common"))
   .disablePlugins(AndroidApp)
-  .settings(exportJars := true)
-  .settings(BuildRom.settings:_*)
+  .settings(exportJars := true,
+    libraryDependencies += "com.typesafe" % "config" % "1.3.1")
+  //.settings(BuildRom.settings:_*)
 
 val console = (project in file("console"))
   .disablePlugins(AndroidApp)
