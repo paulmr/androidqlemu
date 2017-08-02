@@ -43,6 +43,8 @@ class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promName: String, p
 
   lazy val initDone = {
     log("Custom prom init triggered")
+    log("disabling MDV driver")
+    mon.setSysVar(QDOSMonitor.SV.DDLST, 0)
     true
   }
 
