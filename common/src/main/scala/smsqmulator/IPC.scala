@@ -32,10 +32,21 @@ class IPC {
   private var IPC020 = 0
   private var IPCreturn = 0
 
+  var keyBuffer = List(0x3b | 0x1000) // 1 key
+
   private def exec_IPCcmd(cmd: Int) = {
-    log(s"Would execute ipc cmd $cmd")
-    IPCreturn = 0xFF
-    IPCcnt = 8
+    log(s"exec_IPCcmd: $cmd")
+    cmd match {
+      case 1 =>
+        IPCreturn = 0 | (if(keyBuffer.length > 0) 0x01 else 0)
+        IPCcnt = 8
+      case 8 => // get key
+        IPCreturn = keyBuffer.head
+        IPCcnt = 16
+      case _ =>
+        IPCreturn = 0
+        IPCcnt = 0
+    }
   }
 
   def send(data: Int): Unit = {
