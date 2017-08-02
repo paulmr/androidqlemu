@@ -10,7 +10,7 @@ import smsqmulator.util.Logger.log
 import m68k.memory.ByteBufferAddressSpace
 import java.nio.ByteBuffer
 
-class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promSize: Int = 16 * 1024)
+class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promName: String, promSize: Int = 16 * 1024)
     extends ByteBufferAddressSpace {
 
   private val bytes: Array[Byte] = Array.fill(promSize)(0.toByte)
@@ -23,6 +23,11 @@ class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promSize: Int = 16 
   private val initOffset = 0xBE // init func (magic addr)
   private val initAddr   = initStartAddr + 0xBE // relative to start of prom
 
+  def writeString(addr: Int, s: String) = {
+    val bytes = s.getBytes
+    bytes.foldLeft(addr) { (addr, byte) => writeByte(addr, byte); addr + 1 }
+  }
+
   def init() = {
     val addr = startAddr
     writeLong(addr, 0x4AFB0001) // magic prom identifier
@@ -30,8 +35,8 @@ class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promSize: Int = 16 
     writeWord(addr + 6, initOffset)
 
     // prom name
-    writeWord(addr + 8, 1)
-    writeByte(addr + 10, 65)
+    writeWord(addr + 8, promName.length)
+    writeString(addr + 10, promName)
 
     this
   }
