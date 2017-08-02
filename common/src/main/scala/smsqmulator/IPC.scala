@@ -4,18 +4,21 @@ import smsqmulator.util.Logger.log
 
 /**
   * the logic here has been stolen from qlay's qlio.c (and translated
-  * into scala). The copyright notice for QLAY is:
+  * into scala) as downloaded from http://web.inter.nl.net/hcc/A.Jaw.Venema/.
+  * 
+  * The copyright notice for QLAY is as follows, which I take to mean
+  * that this is ok to do!:
   *
-  * "1. Copyrights
-  * This program is freeware. You may do with it whatever you want for
-  * personal use. Copyright Jan Venema.
+  *    "1. Copyrights This program is freeware. You may do with it
+  *    whatever you want for personal use. Copyright Jan Venema.
+  *   
+  *    Permission is granted to redistribute this program free of
+  *    charge, provided it is distributed in the full archive with
+  *    unmodified contents.  No profit beyond the price of the media
+  *    on which it is distributed is made."
   *
-  * Permission is granted to redistribute this program free of charge,
-  * provided it is distributed in the full archive with unmodified contents.
-  * No profit beyond the price of the media on which it is distributed is
-  * made."
-  *
-  *  Big thanks to Jan Venema.
+  * So big thanks to Jan Venema for saving me a lot of time trying to
+  * work out how the very complicated IPC protocol works.
   */
 
 class IPC {
