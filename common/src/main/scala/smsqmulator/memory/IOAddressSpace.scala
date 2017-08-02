@@ -12,6 +12,8 @@ import qdos.MemSize
 
 import smsqmulator.util.Logger.log
 
+import qdos.IPC
+
 class IOAddressSpace(
   val getStartAddress: Int,
   val getEndAddress: Int,
@@ -19,6 +21,8 @@ class IOAddressSpace(
 ) extends AddressSpace {
 
   private var PC_INTR = 0
+
+  private val ipc = new IPC
 
   def addInterrupt(i: Int) = PC_INTR |= i
 
@@ -28,10 +32,13 @@ class IOAddressSpace(
 
   def handleRead(addr: Int, size: MemSize.Value): Int = addr match {
     case 0x18021 => PC_INTR
+    case 0x18020 => ipc.receive()
     case _ => 0
   }
 
   def handleWrite(addr: Int, value: Int, size: MemSize.Value): Unit = addr match {
+    case 0x18003 =>
+      ipc.send(value)
     case 0x18021 =>
       PC_INTR = (value & 0xFF)
       log(f"[pc=${mon.cpu.getPC()}%08x] PC_INTR/$size set to: ${value.toBinaryString}")
