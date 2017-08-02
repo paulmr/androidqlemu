@@ -15,6 +15,8 @@ class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promName: String, p
 
   private val bytes: Array[Byte] = Array.fill(promSize)(0.toByte)
 
+  private val INS_RTS = 0x4e75 // assembled RTS instruction
+
   this.size = bytes.size
   this.buffer = ByteBuffer.wrap(bytes)
 
@@ -41,18 +43,17 @@ class PromAddressSpace(mon: QDOSMonitor, initStartAddr: Int, promName: String, p
     this
   }
 
-  lazy val initDone = {
+  def doCustomInit() = {
     log("Custom prom init triggered")
     log("disabling MDV driver")
     mon.setSysVar(QDOSMonitor.SV.DDLST, 0)
-    true
   }
 
   override def readWord(addr: Int) = {
     addr match {
       case `initAddr` =>
-        initDone // trigger init
-        0x4e75 // RTS
+        doCustomInit() // trigger init
+        INS_RTS
       case _ => super.readWord(addr)
     }
   }
