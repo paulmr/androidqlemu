@@ -3,7 +3,6 @@ project/project
 bin/
 local.properties
 proguard-sbt.txt
-rom
 /src/main/res/raw/qlemurom
 application.conf
 /script
