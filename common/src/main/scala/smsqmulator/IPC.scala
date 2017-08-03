@@ -35,11 +35,12 @@ class IPC(mon: QDOSMonitor) {
   def makeKey(col: Int, row: Int) = (col << 3) | row
 
 
+  var keyBufSize = 1
   var keyBufferHead = 0
-  val keyBuffer = Array.fill(0)(0)
+  val keyBuffer = Array.fill(keyBufSize)(0)
 
   def addKey(k: Int) = {
-    if(keyBufferHead < keyBuffer.size) {
+    if(keyBufferHead < keyBufSize) {
       keyBuffer(keyBufferHead) = k
       keyBufferHead += 1
     }
@@ -48,7 +49,8 @@ class IPC(mon: QDOSMonitor) {
   private def exec_IPCcmd(cmd: Int) = {
     cmd match {
       case 1 =>
-        IPCreturn = 0 | (if(keyBufferHead > 0) 0x01 else 0)
+        IPCreturn = (0 | (if(keyBufferHead > 0) 0x01 else 0))
+        log(s"ipc status: ${keyBufferHead}, ${IPCreturn}")
         IPCcnt = 8
       case 8 => // get key
         if(keyBufferHead > 0) {
